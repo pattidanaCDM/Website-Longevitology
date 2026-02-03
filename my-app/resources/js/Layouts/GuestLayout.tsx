@@ -1,17 +1,20 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
-import { Link } from '@inertiajs/react';
-import { PropsWithChildren } from 'react';
+import { ReactNode, PropsWithChildren } from 'react';
+import ImageSlideshow from '@/Components/ImageSlideshow';
 
-export default function Guest({ children }: PropsWithChildren) {
+export default function Guest({ children, header, fullWidth = false, slideshowImages = [] }: PropsWithChildren<{ header?: ReactNode, fullWidth?: boolean, slideshowImages?: string[] }>) {
     return (
-        <div className="flex min-h-screen flex-col items-center bg-gray-100 pt-6 sm:justify-center sm:pt-0">
-            <div>
-                <Link href="/">
-                    <ApplicationLogo className="h-20 w-20 fill-current text-gray-500" />
-                </Link>
+        <div className="flex min-h-screen flex-col items-center bg-white dark:bg-slate-950 transition-colors duration-300">
+            {header}
+            {/* Slideshow di atas */}
+            <div className={`pt-10 mb-10 w-full px-6 ${fullWidth ? 'max-w-7xl' : 'max-w-4xl'}`}>
+                <ImageSlideshow
+                    images={slideshowImages.length > 0 ? slideshowImages : ['/image/slideshow1.png']}
+                    className="aspect-video w-full shadow-lg"
+                />
             </div>
 
-            <div className="mt-6 w-full overflow-hidden bg-white px-6 py-4 shadow-md sm:max-w-md sm:rounded-lg">
+            {/* Container putih full page */}
+            <div className={`flex-1 w-full ${fullWidth ? '' : 'px-6 py-6 bg-white dark:bg-slate-900 shadow-md sm:rounded-none'}`}>
                 {children}
             </div>
         </div>
