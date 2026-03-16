@@ -12,6 +12,9 @@ class BranchController extends Controller
      */
     public function store(Request $request)
     {
+        // Only Super Admin can create branches (handled by Policy or Middleware)
+        // If you want to use the policy: $this->authorize('create', Branch::class);
+
         $request->validate([
             'name' => 'required|string|max:255',
             'address' => 'required|string',
@@ -28,6 +31,11 @@ class BranchController extends Controller
      */
     public function update(Request $request, Branch $branch)
     {
+        // Check if user is authorized to update this branch
+        if ($request->user()->cannot('update', $branch)) {
+            abort(403, 'You do not have permission to update this branch.');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'address' => 'required|string',
@@ -44,6 +52,10 @@ class BranchController extends Controller
      */
     public function destroy(Branch $branch)
     {
+        if (request()->user()->cannot('delete', $branch)) {
+            abort(403, 'You do not have permission to delete this branch.');
+        }
+
         $branch->delete();
 
         return redirect()->back()->with('success', 'Branch deleted successfully.');

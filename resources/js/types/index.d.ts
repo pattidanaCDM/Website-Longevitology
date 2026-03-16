@@ -29,3 +29,29 @@ export type PageProps<
         user: User;
     };
 };
+
+export interface Patient {
+    id: number;
+    name: string;
+    gender: "male" | "female";
+    birth_date: string;
+    phone?: string;
+    address?: string;
+    initial_complaint: string;
+    current_complaint?: string;
+    cakra?: string;
+    is_verified?: boolean;
+    photo?: string;
+    branches?: Branch[];
+}
+
+export interface Therapist {
+    id: number;
+    name: string;
+    gender: "male" | "female";
+    birth_date: string;
+    phone?: string;
+    address?: string;
+    photo?: string;
+    branches?: Branch[];
+}

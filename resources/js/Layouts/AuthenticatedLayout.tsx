@@ -1,8 +1,20 @@
-import { useState, useEffect } from 'react';
-import { Link, usePage } from '@inertiajs/react';
-import { PropsWithChildren, ReactNode } from 'react';
-import { Bell, User, Users, Map, LogOut, Menu, X, LayoutDashboard, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
-import DarkModeToggle from '@/Components/DarkModeToggle';
+import { useState, useEffect } from "react";
+import { Link, usePage } from "@inertiajs/react";
+import { PropsWithChildren, ReactNode } from "react";
+import {
+    Bell,
+    User,
+    Users,
+    Map,
+    LogOut,
+    Menu,
+    X,
+    LayoutDashboard,
+    ChevronLeft,
+    ChevronRight,
+    Clock,
+} from "lucide-react";
+import DarkModeToggle from "@/Components/DarkModeToggle";
 
 export default function Authenticated({
     header,
@@ -16,16 +28,16 @@ export default function Authenticated({
     const [notifications, setNotifications] = useState<any[]>([]);
 
     // Check if user is superadmin
-    const isSuperadmin = user.role?.name === 'superadmin';
+    const isSuperadmin = user.role?.name === "superadmin";
 
     const fetchNotifications = () => {
-        fetch(route('notifications.index'))
-            .then(res => res.json())
-            .then(data => {
+        fetch(route("notifications.index"))
+            .then((res) => res.json())
+            .then((data) => {
                 setNotifications(data.notifications);
                 setNotificationCount(data.unread_count);
             })
-            .catch(() => { });
+            .catch(() => {});
     };
 
     useEffect(() => {
@@ -33,19 +45,29 @@ export default function Authenticated({
     }, []);
 
     const markAsRead = (id: string) => {
-        fetch(route('notifications.read', id), {
-            method: 'POST',
-            headers: { 'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement).content }
-        })
-            .then(() => fetchNotifications());
+        fetch(route("notifications.read", id), {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": (
+                    document.querySelector(
+                        'meta[name="csrf-token"]',
+                    ) as HTMLMetaElement
+                ).content,
+            },
+        }).then(() => fetchNotifications());
     };
 
     const markAllAsRead = () => {
-        fetch(route('notifications.read-all'), {
-            method: 'POST',
-            headers: { 'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement).content }
-        })
-            .then(() => fetchNotifications());
+        fetch(route("notifications.read-all"), {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": (
+                    document.querySelector(
+                        'meta[name="csrf-token"]',
+                    ) as HTMLMetaElement
+                ).content,
+            },
+        }).then(() => fetchNotifications());
     };
 
     return (
@@ -62,7 +84,10 @@ export default function Authenticated({
                             >
                                 <Menu className="w-6 h-6" />
                             </button>
-                            <Link href={route('dashboard')} className="flex items-center">
+                            <Link
+                                href={route("dashboard")}
+                                className="flex items-center"
+                            >
                                 <span className="text-2xl font-bold bg-gradient-to-r from-[#ad2c90] to-[#5400d4] bg-clip-text text-transparent">
                                     Longevitology
                                 </span>
@@ -77,7 +102,9 @@ export default function Authenticated({
                             {/* Notifications - Icon Only */}
                             <div className="relative">
                                 <button
-                                    onClick={() => setShowNotifications(!showNotifications)}
+                                    onClick={() =>
+                                        setShowNotifications(!showNotifications)
+                                    }
                                     className="relative p-2 text-gray-700 dark:text-gray-300 hover:text-[#ad2c90] dark:hover:text-[#ad2c90] transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-slate-800"
                                     title="Notifications"
                                 >
@@ -93,9 +120,16 @@ export default function Authenticated({
                                 {showNotifications && (
                                     <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-xl shadow-xl py-2 z-50 border border-gray-100 dark:border-gray-700">
                                         <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                                            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Notifications</h3>
+                                            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                Notifications
+                                            </h3>
                                             {notificationCount > 0 && (
-                                                <button onClick={markAllAsRead} className="text-xs text-[#ad2c90] hover:underline">Mark all as read</button>
+                                                <button
+                                                    onClick={markAllAsRead}
+                                                    className="text-xs text-[#ad2c90] hover:underline"
+                                                >
+                                                    Mark all as read
+                                                </button>
                                             )}
                                         </div>
                                         <div className="max-h-96 overflow-y-auto">
@@ -107,12 +141,22 @@ export default function Authenticated({
                                                 notifications.map((n) => (
                                                     <div
                                                         key={n.id}
-                                                        className={`px-4 py-3 border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer ${!n.read_at ? 'bg-purple-50/30 dark:bg-purple-900/10' : ''}`}
-                                                        onClick={() => markAsRead(n.id)}
+                                                        className={`px-4 py-3 border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer ${!n.read_at ? "bg-purple-50/30 dark:bg-purple-900/10" : ""}`}
+                                                        onClick={() =>
+                                                            markAsRead(n.id)
+                                                        }
                                                     >
-                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">{n.data.title}</p>
-                                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{n.data.message}</p>
-                                                        <p className="text-[10px] text-gray-400 mt-1">{new Date(n.created_at).toLocaleString()}</p>
+                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                                            {n.data.title}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                            {n.data.message}
+                                                        </p>
+                                                        <p className="text-[10px] text-gray-400 mt-1">
+                                                            {new Date(
+                                                                n.created_at,
+                                                            ).toLocaleString()}
+                                                        </p>
                                                     </div>
                                                 ))
                                             )}
@@ -124,7 +168,7 @@ export default function Authenticated({
                             {/* Manage Users - Superadmin Only */}
                             {isSuperadmin && (
                                 <Link
-                                    href={route('users.index')}
+                                    href={route("users.index")}
                                     className="p-2 text-gray-700 dark:text-gray-300 hover:text-[#ad2c90] dark:hover:text-[#ad2c90] transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-slate-800"
                                     title="Manage Users"
                                 >
@@ -135,7 +179,9 @@ export default function Authenticated({
                             {/* User Menu - Icon Only */}
                             <div className="relative">
                                 <button
-                                    onClick={() => setShowUserMenu(!showUserMenu)}
+                                    onClick={() =>
+                                        setShowUserMenu(!showUserMenu)
+                                    }
                                     className="p-2 bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white rounded-full hover:shadow-lg transition-all"
                                     title={user.name}
                                 >
@@ -146,19 +192,21 @@ export default function Authenticated({
                                 {showUserMenu && (
                                     <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg py-2 z-50">
                                         <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user.name}</p>
+                                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                                {user.name}
+                                            </p>
                                             <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                {user.role?.name || 'User'}
+                                                {user.role?.name || "User"}
                                             </p>
                                         </div>
                                         <Link
-                                            href={route('profile.edit')}
+                                            href={route("profile.edit")}
                                             className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
                                         >
                                             Profile
                                         </Link>
                                         <Link
-                                            href={route('logout')}
+                                            href={route("logout")}
                                             method="post"
                                             as="button"
                                             className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2"
@@ -176,17 +224,19 @@ export default function Authenticated({
 
             {/* Sidebar */}
             <aside
-                className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 z-40 ${sidebarOpen ? 'w-64' : 'w-0'
-                    } overflow-hidden`}
+                className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 z-40 ${
+                    sidebarOpen ? "w-64" : "w-0"
+                } overflow-hidden`}
             >
                 <div className="p-4 space-y-2">
                     {/* Dashboard */}
                     <Link
-                        href={route('dashboard')}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${route().current('dashboard')
-                            ? 'bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white'
-                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800'
-                            }`}
+                        href={route("dashboard")}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                            route().current("dashboard")
+                                ? "bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white"
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
+                        }`}
                     >
                         <LayoutDashboard className="w-5 h-5" />
                         <span className="font-medium">Dashboard</span>
@@ -194,26 +244,167 @@ export default function Authenticated({
 
                     {/* Manage Schedules */}
                     <Link
-                        href={route('schedules.index')}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${route().current('schedules.*')
-                            ? 'bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white'
-                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800'
-                            }`}
+                        href={route("schedules.index")}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                            route().current("schedules.*")
+                                ? "bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white"
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
+                        }`}
                     >
                         <Clock className="w-5 h-5" />
                         <span className="font-medium">Manage Schedules</span>
                     </Link>
 
+                    {/* Manage Patients */}
+                    <Link
+                        href={route("patients.index")}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                            route().current("patients.*")
+                                ? "bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white"
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
+                        }`}
+                    >
+                        <User className="w-5 h-5" />
+                        <span className="font-medium">Manage Patients</span>
+                    </Link>
 
+                    {/* Manage Therapists */}
+                    <Link
+                        href={route("therapists.index")}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                            route().current("therapists.*")
+                                ? "bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white"
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
+                        }`}
+                    >
+                        <Users className="w-5 h-5" />
+                        <span className="font-medium">Manage Therapists</span>
+                    </Link>
+
+                    {/* Attendance */}
+                    <div className="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider ml-4">
+                        Attendance
+                    </div>
+
+                    <Link
+                        href={route("attendance.patients.index")}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                            route().current("attendance.patients.*")
+                                ? "bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white"
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
+                        }`}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="w-5 h-5"
+                        >
+                            <rect
+                                width="8"
+                                height="4"
+                                x="8"
+                                y="2"
+                                rx="1"
+                                ry="1"
+                            />
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                            <path d="m9 14 2 2 4-4" />
+                        </svg>
+                        <span className="font-medium">Patient Check-In</span>
+                    </Link>
+
+                    <Link
+                        href={route("attendance.therapists.index")}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                            route().current("attendance.therapists.*")
+                                ? "bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white"
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
+                        }`}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="w-5 h-5"
+                        >
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                            <circle cx="8.5" cy="7" r="4" />
+                            <polyline points="17 11 19 13 23 9" />
+                        </svg>
+                        <span className="font-medium">Therapist Check-In</span>
+                    </Link>
+
+                    {isSuperadmin && (
+                        <>
+                            <div className="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider ml-4">
+                                Administration
+                            </div>
+
+                            <Link
+                                href={route("users.index")}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                                    route().current("users.*")
+                                        ? "bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white"
+                                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
+                                }`}
+                            >
+                                <Users className="w-5 h-5" />
+                                <span className="font-medium">
+                                    Manage Users
+                                </span>
+                            </Link>
+
+                            <Link
+                                href={route("audit-logs.index")}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                                    route().current("audit-logs.*")
+                                        ? "bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white"
+                                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
+                                }`}
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="w-5 h-5"
+                                >
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <path d="M16 13H8"></path>
+                                    <path d="M16 17H8"></path>
+                                    <path d="M10 9H8"></path>
+                                </svg>
+                                <span className="font-medium">Audit Logs</span>
+                            </Link>
+                        </>
+                    )}
                 </div>
-
-
             </aside>
 
             {/* Main Content */}
             <main
-                className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'
-                    }`}
+                className={`pt-16 transition-all duration-300 ${
+                    sidebarOpen ? "ml-64" : "ml-0"
+                }`}
             >
                 {header && (
                     <header className="bg-white dark:bg-slate-900 shadow transition-colors duration-300">
