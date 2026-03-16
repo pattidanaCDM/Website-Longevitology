@@ -16,12 +16,14 @@ class SuperadminSeeder extends Seeder
     {
         $superadminRole = Role::where('name', Role::SUPERADMIN)->first();
 
-        User::create([
-            'name' => 'Super Administrator',
-            'email' => 'superadmin@yopmail.com',
-            'password' => Hash::make('HelloWorld1!'),
-            'role_id' => $superadminRole->id,
-            'email_verified_at' => now(),
-        ]);
+        User::firstOrCreate(
+            ['email' => 'superadmin@example.com'],
+            [
+                'name' => 'Super Administrator',
+                'password' => Hash::make('password'),
+                'role_id' => $superadminRole->id,
+                'email_verified_at' => now(),
+            ]
+        );
     }
 }

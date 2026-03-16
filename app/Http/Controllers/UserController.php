@@ -2,24 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditTrail;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Branch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 
 class UserController extends Controller
 {
     /**
-     * Display a listing of users.
+     * Display a listing of the resource.
      */
     public function index()
     {
-        $users = User::with(['role', 'branch'])->get();
+        $users = User::with(['role', 'branch'])->paginate(10);
 
-        return Inertia::render('ManageUsers', [
+        return Inertia::render('Users/Index', [
             'users' => $users,
             'roles' => Role::all(),
             'branches' => Branch::all(),
@@ -27,14 +29,14 @@ class UserController extends Controller
     }
 
     /**
-     * Store a newly created user.
+     * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => ['required', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role_id' => 'required|exists:roles,id',
             'branch_id' => 'nullable|exists:branches,id',
         ]);
@@ -48,11 +50,24 @@ class UserController extends Controller
             'email_verified_at' => now(),
         ]);
 
+        // Log Audit Trail
+        AuditTrail::create([
+            'user_id' => Auth::id(),
+            'event' => 'created',
+            'description' => "Created User: {$user->name}",
+            'auditable_type' => get_class($user),
+            'auditable_id' => $user->id,
+            'new_values' => json_encode($user->toArray()),
+            'url' => request()->fullUrl(),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
         return redirect()->back()->with('success', 'User created successfully.');
     }
 
     /**
-     * Update the specified user.
+     * Update the specified resource in storage.
      */
     public function update(Request $request, User $user)
     {
@@ -63,6 +78,8 @@ class UserController extends Controller
             'branch_id' => 'nullable|exists:branches,id',
         ]);
 
+        $oldValues = $user->getOriginal();
+
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
@@ -70,20 +87,50 @@ class UserController extends Controller
             'branch_id' => $request->branch_id,
         ]);
 
+        // Log Audit Trail
+        AuditTrail::create([
+            'user_id' => Auth::id(),
+            'event' => 'updated',
+            'description' => "Updated User: {$user->name}",
+            'auditable_type' => get_class($user),
+            'auditable_id' => $user->id,
+            'old_values' => json_encode($oldValues),
+            'new_values' => json_encode($user->getChanges()),
+            'url' => request()->fullUrl(),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
         return redirect()->back()->with('success', 'User updated successfully.');
     }
 
     /**
-     * Remove the specified user.
+     * Remove the specified resource from storage.
      */
     public function destroy(User $user)
     {
-        // Prevent deleting yourself
-        if ($user->id === auth()->id()) {
+        if ($user->id === Auth::id()) {
             return redirect()->back()->with('error', 'You cannot delete your own account.');
         }
 
+        $oldValues = $user->toArray();
+        $userName = $user->name;
+        $userId = $user->id;
+
         $user->delete();
+
+        // Log Audit Trail
+        AuditTrail::create([
+            'user_id' => Auth::id(),
+            'event' => 'deleted',
+            'description' => "Deleted User: {$userName}",
+            'auditable_type' => User::class,
+            'auditable_id' => $userId,
+            'old_values' => json_encode($oldValues),
+            'url' => request()->fullUrl(),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
 
         return redirect()->back()->with('success', 'User deleted successfully.');
     }
