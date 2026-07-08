@@ -30,6 +30,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckRole::class . ':superadmin'
     Route::post('/users/{user}/send-reset-link', [\App\Http\Controllers\UserController::class, 'sendResetLink'])->name('users.send-reset-link');
 
     // Branch Management Routes
+    Route::get('/branches', [\App\Http\Controllers\BranchController::class, 'index'])->name('branches.index');
     Route::post('/branches', [\App\Http\Controllers\BranchController::class, 'store'])->name('branches.store');
     Route::put('/branches/{branch}', [\App\Http\Controllers\BranchController::class, 'update'])->name('branches.update');
     Route::delete('/branches/{branch}', [\App\Http\Controllers\BranchController::class, 'destroy'])->name('branches.destroy');
@@ -62,6 +63,10 @@ Route::middleware('auth')->group(function () {
 
     // Attendance
     Route::prefix('attendance')->group(function () {
+        Route::get('/archives', [\App\Http\Controllers\AttendanceArchiveController::class, 'index'])->name('attendance.archives.index');
+        Route::post('/archives/patients', [\App\Http\Controllers\AttendanceArchiveController::class, 'storePatient'])->name('attendance.archives.patients.store');
+        Route::post('/archives/therapists', [\App\Http\Controllers\AttendanceArchiveController::class, 'storeTherapist'])->name('attendance.archives.therapists.store');
+        
         Route::get('/patients/export/excel', [\App\Http\Controllers\PatientAttendanceController::class, 'exportExcel'])->name('attendance.patients.export.excel');
         Route::get('/patients/export/pdf', [\App\Http\Controllers\PatientAttendanceController::class, 'exportPdf'])->name('attendance.patients.export.pdf');
 

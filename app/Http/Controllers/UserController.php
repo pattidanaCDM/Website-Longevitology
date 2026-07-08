@@ -1,27 +1,34 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use App\Models\AuditTrail;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Branch;
+use App\Services\UserService;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rules;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class UserController extends Controller
 {
+    public function __construct(private UserService $userService)
+    {
+    }
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): Response
     {
-        $users = User::with(['role', 'branch'])->paginate(10);
+        $users = User::with(['role', 'branch'])->get();
 
-        return Inertia::render('Users/Index', [
+        return Inertia::render('ManageUsers', [
             'users' => $users,
             'roles' => Role::all(),
             'branches' => Branch::all(),
@@ -31,37 +38,14 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreUserRequest $request): RedirectResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role_id' => 'required|exists:roles,id',
-            'branch_id' => 'nullable|exists:branches,id',
-        ]);
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role_id' => $request->role_id,
-            'branch_id' => $request->branch_id,
-            'email_verified_at' => now(),
-        ]);
-
-        // Log Audit Trail
-        AuditTrail::create([
-            'user_id' => Auth::id(),
-            'event' => 'created',
-            'description' => "Created User: {$user->name}",
-            'auditable_type' => get_class($user),
-            'auditable_id' => $user->id,
-            'new_values' => json_encode($user->toArray()),
-            'url' => request()->fullUrl(),
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        $this->userService->store(
+            $request->validated(),
+            $request->fullUrl(),
+            $request->ip(),
+            $request->userAgent()
+        );
 
         return redirect()->back()->with('success', 'User created successfully.');
     }
@@ -69,37 +53,15 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $user)
+    public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'role_id' => 'required|exists:roles,id',
-            'branch_id' => 'nullable|exists:branches,id',
-        ]);
-
-        $oldValues = $user->getOriginal();
-
-        $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'role_id' => $request->role_id,
-            'branch_id' => $request->branch_id,
-        ]);
-
-        // Log Audit Trail
-        AuditTrail::create([
-            'user_id' => Auth::id(),
-            'event' => 'updated',
-            'description' => "Updated User: {$user->name}",
-            'auditable_type' => get_class($user),
-            'auditable_id' => $user->id,
-            'old_values' => json_encode($oldValues),
-            'new_values' => json_encode($user->getChanges()),
-            'url' => request()->fullUrl(),
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        $this->userService->update(
+            $user,
+            $request->validated(),
+            $request->fullUrl(),
+            $request->ip(),
+            $request->userAgent()
+        );
 
         return redirect()->back()->with('success', 'User updated successfully.');
     }
@@ -107,30 +69,18 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(User $user)
+    public function destroy(Request $request, User $user): RedirectResponse
     {
-        if ($user->id === Auth::id()) {
-            return redirect()->back()->with('error', 'You cannot delete your own account.');
+        try {
+            $this->userService->destroy(
+                $user,
+                $request->fullUrl(),
+                $request->ip(),
+                $request->userAgent()
+            );
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
-
-        $oldValues = $user->toArray();
-        $userName = $user->name;
-        $userId = $user->id;
-
-        $user->delete();
-
-        // Log Audit Trail
-        AuditTrail::create([
-            'user_id' => Auth::id(),
-            'event' => 'deleted',
-            'description' => "Deleted User: {$userName}",
-            'auditable_type' => User::class,
-            'auditable_id' => $userId,
-            'old_values' => json_encode($oldValues),
-            'url' => request()->fullUrl(),
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
 
         return redirect()->back()->with('success', 'User deleted successfully.');
     }
@@ -138,7 +88,7 @@ class UserController extends Controller
     /**
      * Send password reset link to user.
      */
-    public function sendResetLink(User $user)
+    public function sendResetLink(User $user): RedirectResponse
     {
         // Send password reset notification
         $user->notify(new \App\Notifications\ResetPasswordNotification());

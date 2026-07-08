@@ -347,6 +347,34 @@ export default function Authenticated({
                         <span className="font-medium">Therapist Check-In</span>
                     </Link>
 
+                    <Link
+                        href={route("attendance.archives.index")}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                            route().current("attendance.archives.*")
+                                ? "bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white"
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
+                        }`}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="w-5 h-5"
+                        >
+                            <rect width="20" height="18" x="2" y="3" rx="2" />
+                            <path d="M12 11v6" />
+                            <path d="M9 14h6" />
+                            <path d="M2 7h20" />
+                        </svg>
+                        <span className="font-medium">Attendance Archives</span>
+                    </Link>
+
                     {isSuperadmin && (
                         <>
                             <div className="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider ml-4">
@@ -364,6 +392,20 @@ export default function Authenticated({
                                 <Users className="w-5 h-5" />
                                 <span className="font-medium">
                                     Manage Users
+                                </span>
+                            </Link>
+
+                            <Link
+                                href={route("branches.index")}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                                    route().current("branches.*")
+                                        ? "bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white"
+                                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
+                                }`}
+                            >
+                                <Map className="w-5 h-5" />
+                                <span className="font-medium">
+                                    Manage Branches
                                 </span>
                             </Link>
 

@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('patient_id')->constrained('patients')->onDelete('cascade');
             $table->foreignId('branch_id')->constrained('branches')->onDelete('cascade');
-            $table->string('card_number')->unique();
             $table->softDeletes();
             $table->timestamps();
             $table->unique(['patient_id', 'branch_id']);
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('patient_branchs');
+        Schema::dropIfExists('patient_branches');
     }
 };

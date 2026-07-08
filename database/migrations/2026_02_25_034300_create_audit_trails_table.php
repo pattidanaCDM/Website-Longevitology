@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
             $table->string('event');
+            $table->string('description')->nullable();
             $table->nullableMorphs('auditable');
             $table->text('old_values')->nullable();
             $table->text('new_values')->nullable();

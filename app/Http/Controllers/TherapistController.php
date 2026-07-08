@@ -1,21 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Therapist;
 use App\Models\Branch;
-use App\Models\AuditTrail;
+use App\Services\TherapistService;
+use App\Http\Requests\StoreTherapistRequest;
+use App\Http\Requests\UpdateTherapistRequest;
+use App\Http\Requests\ExtendTherapistRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\DB;
+use Inertia\Response;
 
 class TherapistController extends Controller
 {
+    public function __construct(private TherapistService $therapistService)
+    {
+    }
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): Response
     {
+        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         $query = Therapist::with(['branches']);
@@ -25,20 +37,35 @@ class TherapistController extends Controller
             $query->whereHas('branches', function ($q) use ($user) {
                 $q->where('branches.id', $user->branch_id);
             });
+        } else {
+            $branchId = request('branch_id');
+            if ($branchId && $branchId !== 'all') {
+                $query->whereHas('branches', function ($q) use ($branchId) {
+                    $q->where('branches.id', $branchId);
+                });
+            }
         }
 
-        $therapists = $query->latest()->paginate(10);
+        if ($search = request('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        $therapists = $query->latest('updated_at')->paginate(10)->withQueryString();
 
         return Inertia::render('Therapists/Index', [
             'therapists' => $therapists,
             'branches' => $user->isSuperadmin() ? Branch::all() : [$user->branch],
+            'filters' => request()->only(['search', 'branch_id']),
         ]);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Therapist $therapist)
+    public function show(Therapist $therapist): JsonResponse
     {
         $therapist->load(['branches', 'attendances.branch']);
         return response()->json($therapist);
@@ -47,58 +74,16 @@ class TherapistController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreTherapistRequest $request): RedirectResponse
     {
+        /** @var \App\Models\User $user */
         $user = auth()->user();
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'gender' => 'required|in:male,female',
-            'birth_date' => 'required|date',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
-
-        if ($user->isSuperadmin()) {
-            $request->validate(['branch_id' => 'required|exists:branches,id']);
-            $branchId = $request->branch_id;
-        } else {
-            $branchId = $user->branch_id;
-        }
-
-        DB::transaction(function () use ($request, $branchId) {
-            $data = $request->except(['card_number', 'branch_id', 'photo']);
-
-            // Handle Photo Upload
-            if ($request->hasFile('photo')) {
-                $path = $request->file('photo')->store('photos/therapists', 'public');
-                $data['photo'] = $path;
-            }
-
-            $therapist = Therapist::create($data);
-
-            // Generate Card Number
-            $branch = Branch::find($branchId);
-            $branchCode = $branch->code ?? 'TR';
-
-            $count = DB::table('therapist_branches')
-                ->where('branch_id', $branchId)
-                ->count();
-
-            $sequence = str_pad($count + 1, 5, '0', STR_PAD_LEFT);
-            $cardNumber = $branchCode . $sequence; // e.g., CDM00001
-
-            // Ensure Uniqueness
-            while (DB::table('therapist_branches')->where('card_number', $cardNumber)->exists()) {
-                $count++;
-                $sequence = str_pad($count + 1, 5, '0', STR_PAD_LEFT);
-                $cardNumber = $branchCode . $sequence;
-            }
-
-            // Link to branch
-            $therapist->branches()->attach($branchId, ['card_number' => $cardNumber]);
-        });
+        
+        $this->therapistService->store(
+            $request->validated(), 
+            $request->file('photo'), 
+            $user
+        );
 
         return redirect()->back()->with('success', 'Therapist created successfully.');
     }
@@ -106,7 +91,7 @@ class TherapistController extends Controller
     /**
      * Verify and search for a therapist globaly.
      */
-    public function verify(Request $request)
+    public function verify(Request $request): JsonResponse
     {
         $search = $request->search;
 
@@ -115,9 +100,6 @@ class TherapistController extends Controller
         }
 
         $therapist = Therapist::where('phone', $search)
-            ->orWhereHas('branches', function ($q) use ($search) {
-                $q->where('therapist_branches.card_number', $search);
-            })
             ->with(['branches' => function ($q) {
                 $q->select('branches.id', 'branches.name');
             }])
@@ -129,60 +111,23 @@ class TherapistController extends Controller
     /**
      * Extend a therapist to the current user's branch.
      */
-    public function extend(Request $request)
+    public function extend(ExtendTherapistRequest $request): RedirectResponse
     {
-        $request->validate([
-            'therapist_id' => 'required|exists:therapists,id',
-        ]);
-
+        /** @var \App\Models\User $user */
         $user = auth()->user();
-        // If superadmin, they might need to specify branch, but for now assuming current user's branch context
-        // Or if superadmin extending, request should have branch_id.
-        // The prompt implies the admin (manager) does this for "their own data".
 
-        $branchId = $user->branch_id;
-        if ($user->isSuperadmin()) {
-            $request->validate(['branch_id' => 'required|exists:branches,id']);
-            $branchId = $request->branch_id;
+        try {
+            $this->therapistService->extend(
+                (int) $request->therapist_id,
+                $request->branch_id ? (int) $request->branch_id : null,
+                $user,
+                $request->fullUrl(),
+                $request->ip(),
+                $request->userAgent()
+            );
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
-
-        $therapist = Therapist::findOrFail($request->therapist_id);
-
-        // Check if already in branch
-        if ($therapist->branches()->where('branch_id', $branchId)->exists()) {
-            return redirect()->back()->with('error', 'Therapist is already assigned to this branch.');
-        }
-
-        DB::transaction(function () use ($therapist, $branchId) {
-            $branch = Branch::findOrFail($branchId);
-            $branchCode = $branch->code ?? 'TR'; // Fallback code if not set
-
-            // Start count with 1
-            $count = DB::table('therapist_branches')->where('branch_id', $branchId)->count() + 1;
-
-            do {
-                $sequence = str_pad($count, 5, '0', STR_PAD_LEFT);
-                $cardNumber = $branchCode . $sequence;
-                $exists = DB::table('therapist_branches')->where('card_number', $cardNumber)->exists();
-                if ($exists) $count++;
-            } while ($exists);
-
-            $therapist->branches()->attach($branchId, ['card_number' => $cardNumber]);
-
-            // Log Audit Trail
-            AuditTrail::create([
-                'user_id' => auth()->id(),
-                'event' => 'extended',
-                'description' => "Extended Therapist: {$therapist->name} to Branch: {$branch->name}",
-                'auditable_type' => get_class($therapist),
-                'auditable_id' => $therapist->id,
-                'old_values' => null,
-                'new_values' => json_encode(['branch_id' => $branchId, 'card_number' => $cardNumber]),
-                'url' => request()->fullUrl(),
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-            ]);
-        });
 
         return redirect()->back()->with('success', 'Therapist extended to branch successfully.');
     }
@@ -190,34 +135,17 @@ class TherapistController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Therapist $therapist)
+    public function update(UpdateTherapistRequest $request, Therapist $therapist): RedirectResponse
     {
+        /** @var \App\Models\User $user */
         $user = auth()->user();
-
-        if (!$user->isSuperadmin()) {
-            if (!$therapist->branches()->where('branches.id', $user->branch_id)->exists()) {
-                abort(403, 'Unauthorized action.');
-            }
-        }
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'gender' => 'required|in:male,female',
-            'birth_date' => 'required|date',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
-
-        $data = $request->except(['card_number', 'branch_id', 'photo']);
-
-        // Handle Photo Upload
-        if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('photos/therapists', 'public');
-            $data['photo'] = $path;
-        }
-
-        $therapist->update($data);
+        
+        $this->therapistService->update(
+            $therapist,
+            $request->validated(),
+            $request->file('photo'),
+            $user
+        );
 
         return redirect()->back()->with('success', 'Therapist updated successfully.');
     }
@@ -225,79 +153,24 @@ class TherapistController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request, Therapist $therapist)
+    public function destroy(Request $request, Therapist $therapist): RedirectResponse
     {
+        /** @var \App\Models\User $user */
         $user = auth()->user();
+        
+        $type = $request->query('type', 'global');
+        $branchId = $request->query('branch_id');
 
-        // Super Admin Logic
-        if ($user->isSuperadmin()) {
-            $type = $request->query('type', 'global');
+        $this->therapistService->destroy(
+            $therapist,
+            is_string($type) ? $type : 'global',
+            $branchId ? (int) $branchId : null,
+            $user,
+            $request->fullUrl(),
+            $request->ip(),
+            $request->userAgent()
+        );
 
-            if ($type === 'branch') {
-                $branchId = $request->query('branch_id');
-                if (!$branchId) {
-                    return redirect()->back()->with('error', 'Branch ID is required for branch deletion.');
-                }
-
-                // Soft delete from specific branch pivot
-                $therapist->branches()->updateExistingPivot($branchId, ['deleted_at' => now()]);
-
-                AuditTrail::create([
-                    'user_id' => auth()->id(),
-                    'event' => 'deleted',
-                    'description' => "Removed Therapist: {$therapist->name} from Branch ID: {$branchId}",
-                    'auditable_type' => get_class($therapist),
-                    'auditable_id' => $therapist->id,
-                    'old_values' => null,
-                    'new_values' => json_encode(['deleted_from_branch' => $branchId]),
-                    'url' => request()->fullUrl(),
-                    'ip_address' => request()->ip(),
-                    'user_agent' => request()->userAgent(),
-                ]);
-
-                return redirect()->back()->with('success', 'Therapist removed from branch successfully.');
-            } else {
-                // Global Delete (Soft Delete Therapist itself)
-                $therapist->delete();
-
-                AuditTrail::create([
-                    'user_id' => auth()->id(),
-                    'event' => 'deleted',
-                    'description' => "Deleted Therapist Globally: {$therapist->name}",
-                    'auditable_type' => get_class($therapist),
-                    'auditable_id' => $therapist->id,
-                    'old_values' => null,
-                    'new_values' => json_encode(['deleted_at' => now()]),
-                    'url' => request()->fullUrl(),
-                    'ip_address' => request()->ip(),
-                    'user_agent' => request()->userAgent(),
-                ]);
-
-                return redirect()->back()->with('success', 'Therapist deleted globally successfully.');
-            }
-        }
-
-        // Branch Admin Logic
-        if (!$therapist->branches()->where('branches.id', $user->branch_id)->exists()) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        // Soft delete from THIS branch only (pivot)
-        $therapist->branches()->updateExistingPivot($user->branch_id, ['deleted_at' => now()]);
-
-        AuditTrail::create([
-            'user_id' => auth()->id(),
-            'event' => 'deleted',
-            'description' => "Removed Therapist: {$therapist->name} from Branch: {$user->branch->name}",
-            'auditable_type' => get_class($therapist),
-            'auditable_id' => $therapist->id,
-            'old_values' => null,
-            'new_values' => json_encode(['deleted_from_branch' => $user->branch_id]),
-            'url' => request()->fullUrl(),
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
-
-        return redirect()->back()->with('success', 'Therapist removed from branch successfully.');
+        return redirect()->back()->with('success', 'Therapist deleted successfully.');
     }
 }

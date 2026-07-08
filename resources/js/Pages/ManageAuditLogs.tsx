@@ -106,16 +106,16 @@ export default function ManageAuditLogs({
 
     // Helper to decode JSON values
     const formatValues = (json: string | null) => {
-        if (!json) return <span className="text-gray-400">-</span>;
+        if (!json) return <span className="text-gray-400 dark:text-gray-500">-</span>;
         try {
             const parsed = typeof json === "string" ? JSON.parse(json) : json;
             return (
-                <div className="max-h-32 overflow-y-auto text-xs whitespace-pre-wrap bg-gray-50 p-2 rounded border">
+                <div className="max-h-32 overflow-y-auto text-xs whitespace-pre-wrap bg-gray-50 dark:bg-slate-800 p-2 rounded border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-200">
                     {JSON.stringify(parsed, null, 2)}
                 </div>
             );
         } catch (e) {
-            return <span className="text-gray-400">{String(json)}</span>;
+            return <span className="text-gray-400 dark:text-gray-500">{String(json)}</span>;
         }
     };
 
@@ -126,7 +126,7 @@ export default function ManageAuditLogs({
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="font-semibold text-xl text-gray-800 leading-tight">
+                <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                     Audit Logs
                 </h2>
             }
@@ -135,12 +135,12 @@ export default function ManageAuditLogs({
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
                         {/* Filters & Search */}
-                        <div className="p-6 border-b border-gray-200 bg-gray-50">
+                        <div className="p-6 border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/40">
                             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Search
                                     </label>
                                     <input
@@ -153,12 +153,12 @@ export default function ManageAuditLogs({
                                         onKeyDown={(e) =>
                                             e.key === "Enter" && applyFilters()
                                         }
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         User
                                     </label>
                                     <select
@@ -166,7 +166,7 @@ export default function ManageAuditLogs({
                                         onChange={(e) =>
                                             setSelectedUser(e.target.value)
                                         }
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                     >
                                         <option value="">All Users</option>
                                         {users.map((u) => (
@@ -178,7 +178,7 @@ export default function ManageAuditLogs({
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Event
                                     </label>
                                     <select
@@ -186,7 +186,7 @@ export default function ManageAuditLogs({
                                         onChange={(e) =>
                                             setSelectedEvent(e.target.value)
                                         }
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                     >
                                         <option value="">All Events</option>
                                         {events.map((e) => (
@@ -198,7 +198,7 @@ export default function ManageAuditLogs({
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Type
                                     </label>
                                     <select
@@ -206,7 +206,7 @@ export default function ManageAuditLogs({
                                         onChange={(e) =>
                                             setSelectedType(e.target.value)
                                         }
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                     >
                                         <option value="">All Types</option>
                                         {types.map((t) => (
@@ -226,7 +226,7 @@ export default function ManageAuditLogs({
                                     </button>
                                     <button
                                         onClick={clearFilters}
-                                        className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                        className="inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-slate-700 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                     >
                                         Clear
                                     </button>
@@ -234,31 +234,31 @@ export default function ManageAuditLogs({
                             </div>
                         </div>
 
-                        <div className="p-6 text-gray-900 overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
+                        <div className="p-6 text-gray-900 dark:text-gray-100 overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+                                <thead className="bg-gray-50 dark:bg-slate-800/50">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             Time
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             User
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             Action
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             Description
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             Changes
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             IP
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
+                                <tbody className="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-gray-800">
                                     {logs.data.length === 0 ? (
                                         <tr>
                                             <td
@@ -271,56 +271,67 @@ export default function ManageAuditLogs({
                                     ) : (
                                         logs.data.map((log) => (
                                             <tr key={log.id}>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                                     {new Date(
                                                         log.created_at,
                                                     ).toLocaleString()}
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-200">
                                                     {log.user ? (
                                                         log.user.name
                                                     ) : (
-                                                        <span className="text-gray-400">
+                                                        <span className="text-gray-400 dark:text-gray-500">
                                                             System
                                                         </span>
                                                     )}
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 capitalize">
                                                     <span
                                                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                        ${
-                                                            log.event ===
-                                                            "created"
-                                                                ? "bg-green-100 text-green-800"
+                                                        ${log.event ===
+                                                                "created"
+                                                                ? "bg-green-100 text-green-800 dark:bg-green-950/30 dark:text-green-400"
                                                                 : log.event ===
                                                                     "updated"
-                                                                  ? "bg-blue-100 text-blue-800"
-                                                                  : log.event ===
-                                                                      "deleted"
-                                                                    ? "bg-red-100 text-red-800"
-                                                                    : "bg-gray-100 text-gray-800"
-                                                        }`}
+                                                                    ? "bg-blue-100 text-blue-800 dark:bg-blue-950/30 dark:text-blue-400"
+                                                                    : log.event ===
+                                                                        "deleted"
+                                                                        ? "bg-red-100 text-red-800 dark:bg-red-950/30 dark:text-red-400"
+                                                                        : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400"
+                                                            }`}
                                                     >
                                                         {log.event}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm text-gray-500">
+                                                <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                                     {log.description ||
                                                         `${formatModelName(log.auditable_type)} #${log.auditable_id}`}
                                                 </td>
-                                                <td className="px-6 py-4 text-sm text-gray-500 max-w-xs overflow-hidden">
+                                                <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs overflow-hidden">
                                                     <div className="grid grid-cols-1 gap-2">
                                                         {log.event ===
                                                             "updated" && (
-                                                            <>
-                                                                <div>
-                                                                    <span className="text-xs font-bold text-red-500 block">
-                                                                        Old:
-                                                                    </span>
-                                                                    {formatValues(
-                                                                        log.old_values,
-                                                                    )}
-                                                                </div>
+                                                                <>
+                                                                    <div>
+                                                                        <span className="text-xs font-bold text-red-500 block">
+                                                                            Old:
+                                                                        </span>
+                                                                        {formatValues(
+                                                                            log.old_values,
+                                                                        )}
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="text-xs font-bold text-green-500 block">
+                                                                            New:
+                                                                        </span>
+                                                                        {formatValues(
+                                                                            log.new_values,
+                                                                        )}
+                                                                    </div>
+                                                                </>
+                                                            )}
+                                                        {log.event ===
+                                                            "created" && (
                                                                 <div>
                                                                     <span className="text-xs font-bold text-green-500 block">
                                                                         New:
@@ -329,36 +340,24 @@ export default function ManageAuditLogs({
                                                                         log.new_values,
                                                                     )}
                                                                 </div>
-                                                            </>
-                                                        )}
-                                                        {log.event ===
-                                                            "created" && (
-                                                            <div>
-                                                                <span className="text-xs font-bold text-green-500 block">
-                                                                    New:
-                                                                </span>
-                                                                {formatValues(
-                                                                    log.new_values,
-                                                                )}
-                                                            </div>
-                                                        )}
+                                                            )}
                                                         {(log.event ===
                                                             "deleted" ||
                                                             log.event ===
-                                                                "restored") && (
-                                                            <div>
-                                                                <span className="text-xs font-bold text-gray-500 block">
-                                                                    Details:
-                                                                </span>
-                                                                {formatValues(
-                                                                    log.old_values ||
+                                                            "restored") && (
+                                                                <div>
+                                                                    <span className="text-xs font-bold text-gray-500 block">
+                                                                        Details:
+                                                                    </span>
+                                                                    {formatValues(
+                                                                        log.old_values ||
                                                                         log.new_values,
-                                                                )}
-                                                            </div>
-                                                        )}
+                                                                    )}
+                                                                </div>
+                                                            )}
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                                     {log.ip_address}
                                                 </td>
                                             </tr>
@@ -370,7 +369,7 @@ export default function ManageAuditLogs({
                             {/* Pagination */}
                             <div className="mt-4 flex justify-between items-center">
                                 <div>
-                                    <p className="text-sm text-gray-700">
+                                    <p className="text-sm text-gray-700 dark:text-gray-400">
                                         Showing{" "}
                                         <span className="font-medium">
                                             {(logs.current_page - 1) * 50 + 1}
@@ -399,7 +398,7 @@ export default function ManageAuditLogs({
                                                 key={i}
                                                 href={link.url || "#"}
                                                 className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium
-                                                    ${link.active ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600" : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"}
+                                                    ${link.active ? "z-10 bg-indigo-50 dark:bg-indigo-950/40 border-indigo-500 text-indigo-600 dark:text-indigo-400" : "bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700"}
                                                     ${!link.url ? "cursor-not-allowed opacity-50" : ""}
                                                     ${i === 0 ? "rounded-l-md" : ""}
                                                     ${i === logs.links.length - 1 ? "rounded-r-md" : ""}

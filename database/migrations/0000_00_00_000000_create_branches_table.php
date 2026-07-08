@@ -10,8 +10,13 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('branches', function (Blueprint $table) {
-            $table->dropColumn('schedule');
+        Schema::create('branches', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('code', 10)->nullable()->unique();
+            $table->text('address');
+            $table->string('map_url')->nullable();
+            $table->timestamps();
         });
     }
 
@@ -20,8 +25,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('branches', function (Blueprint $table) {
-            $table->string('schedule')->nullable();
-        });
+        Schema::dropIfExists('branches');
     }
 };

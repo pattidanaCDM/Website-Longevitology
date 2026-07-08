@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,6 +18,7 @@ class PatientAttendance extends Model
         'check_in',
         'check_out',
         'complaint',
+        'is_manual',
     ];
 
     protected $casts = [

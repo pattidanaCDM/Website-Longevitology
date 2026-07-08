@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Models\Branch;
@@ -32,7 +34,7 @@ class Therapist extends Model
     public function branches()
     {
         return $this->belongsToMany(Branch::class, 'therapist_branches')
-            ->withPivot('card_number', 'deleted_at')
+            ->withPivot('deleted_at')
             ->withTimestamps()
             ->wherePivot('deleted_at', null); // Filter out soft-deleted pivots
     }

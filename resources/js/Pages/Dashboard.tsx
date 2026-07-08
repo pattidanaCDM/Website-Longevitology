@@ -77,12 +77,12 @@ export default function Dashboard({
         <AuthenticatedLayout
             header={
                 <div className="flex justify-between items-center">
-                    <h2 className="font-semibold text-xl text-gray-800 leading-tight">
+                    <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Dashboard
                     </h2>
                     {isSuperadmin && filters.all_branches && (
                         <select
-                            className="bg-white border text-sm rounded-lg p-2.5"
+                            className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-gray-100 text-sm rounded-lg p-2.5"
                             onChange={handleBranchChange}
                             defaultValue={filters.branch_id || ""}
                         >

@@ -18,7 +18,6 @@
                 <th>Absensi CDM</th>
                 <th>Tanggal</th>
                 <th>Hari</th>
-                <th>No Kartu</th>
                 <th>Nama Pasien</th>
                 <th>Keluhan Awal</th>
                 <th>Keluhan Saat Ini</th>
@@ -27,24 +26,11 @@
         </thead>
         <tbody>
             @foreach($attendances as $attendance)
-            @php
-                $cardNumber = '-';
-                if ($attendance->patient && $attendance->branch_id) {
-                    $branchPivot = $attendance->patient->branches
-                        ->where('id', $attendance->branch_id)
-                        ->first();
-                    
-                    if ($branchPivot) {
-                        $cardNumber = $branchPivot->pivot->card_number ?? '-';
-                    }
-                }
-            @endphp
             <tr>
                 <td>{{ $loop->iteration }}</td>
                 <td>{{ $attendance->branch->name ?? 'CDM' }}</td>
                 <td>{{ \Carbon\Carbon::parse($attendance->check_in)->format('d-m-Y') }}</td>
                 <td>{{ \Carbon\Carbon::parse($attendance->check_in)->locale('id')->isoFormat('dddd') }}</td>
-                <td>{{ $cardNumber }}</td>
                 <td>{{ $attendance->patient->name ?? '-' }}</td>
                 <td>{{ $attendance->patient->initial_complaint ?? '-' }}</td>
                 <td>{{ $attendance->complaint ?? '-' }}</td>

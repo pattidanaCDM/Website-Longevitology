@@ -1,100 +1,82 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\TherapistAttendance;
-use App\Models\Therapist;
+use App\Models\Branch;
+use App\Services\TherapistAttendanceService;
+use App\Http\Requests\StoreTherapistAttendanceRequest;
+use App\Http\Requests\UpdateTherapistAttendanceRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class TherapistAttendanceController extends Controller
 {
-    public function index(Request $request)
+    public function __construct(private TherapistAttendanceService $attendanceService)
     {
+    }
+
+    public function index(Request $request): Response
+    {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
-        $date = $request->input('date', Carbon::today()->toDateString());
+        $date = Carbon::today()->toDateString();
 
-        $query = TherapistAttendance::with(['therapist', 'branch'])
-            ->whereDate('check_in', $date);
+        $attendances = $this->attendanceService->getAttendances($user, $date);
 
-        if (!$user->isSuperadmin()) {
-            $query->where('branch_id', $user->branch_id);
+        $branchId = $user->isSuperadmin() ? $request->input('branch_id') : $user->branch_id;
+        $availableTherapists = [];
+
+        if ($branchId) {
+            $availableTherapists = \App\Models\Therapist::whereHas('branches', function ($q) use ($branchId) {
+                $q->where('branches.id', $branchId);
+            })->whereDoesntHave('attendances', function ($q) use ($branchId) {
+                $q->whereDate('check_in', Carbon::today())
+                  ->where('branch_id', $branchId);
+            })->get(['id', 'name', 'phone']);
         }
 
-        $attendances = $query->latest('check_in')->get();
+        $branches = $user->isSuperadmin() ? Branch::orderBy('name')->get() : [];
 
         return Inertia::render('Attendance/Therapists/Index', [
             'attendances' => $attendances,
             'date' => $date,
+            'branches' => $branches,
+            'availableTherapists' => $availableTherapists,
+            'currentBranchId' => (int) $branchId,
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreTherapistAttendanceRequest $request): RedirectResponse
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        $request->validate([
-            'therapist_identifier' => 'required|string',
-        ]);
-
-        $search = $request->therapist_identifier;
-        $therapist = Therapist::where('phone', $search)
-            ->orWhereHas('branches', function ($q) use ($search) {
-                $q->where('therapist_branches.card_number', $search);
-            })->first();
-
-        if (!$therapist) {
-            return back()->with('error', 'Therapist not found.');
+        try {
+            $this->attendanceService->store($request->validated(), $user);
+            return back()->with('success', 'Therapist checked in.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        if (!$user->isSuperadmin()) {
-            $inBranch = $therapist->branches()->where('branches.id', $user->branch_id)->exists();
-            if (!$inBranch) {
-                return back()->with('error', 'Therapist is not in this branch.');
-            }
-        }
-
-        $branchId = $user->isSuperadmin() ? ($request->branch_id ?? $user->branch_id) : $user->branch_id;
-
-        // Check double check-in
-        $existing = TherapistAttendance::where('therapist_id', $therapist->id)
-            ->where('branch_id', $branchId)
-            ->whereDate('check_in', Carbon::today())
-            ->whereNull('check_out')
-            ->exists();
-
-        if ($existing) {
-            return back()->with('error', 'Therapist is already checked in.');
-        }
-
-        TherapistAttendance::create([
-            'therapist_id' => $therapist->id,
-            'branch_id' => $branchId,
-            'check_in' => now(),
-        ]);
-
-        return back()->with('success', 'Therapist checked in.');
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateTherapistAttendanceRequest $request, string $id): RedirectResponse
     {
-        $attendance = TherapistAttendance::findOrFail($id);
-
-        if ($request->has('check_out_now')) {
-            $attendance->update(['check_out' => now()]);
-            return back()->with('success', 'Therapist checked out.');
-        }
-
-        $attendance->update($request->only(['check_in', 'check_out']));
+        $attendance = TherapistAttendance::findOrFail((int)$id);
+        $this->attendanceService->update($attendance, $request->validated());
         return back()->with('success', 'Attendance updated.');
     }
 
-    public function destroy($id)
+    public function destroy(string $id): RedirectResponse
     {
-        $attendance = TherapistAttendance::findOrFail($id);
-        $attendance->delete();
+        $attendance = TherapistAttendance::findOrFail((int)$id);
+        $this->attendanceService->destroy($attendance);
         return back()->with('success', 'Attendance record deleted.');
     }
 }

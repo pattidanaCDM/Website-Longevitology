@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Models\Branch;
@@ -21,23 +23,21 @@ class Patient extends Model
         'initial_complaint',
         'current_complaint',
         'cakra',
-        'is_verified',
     ];
 
     protected $casts = [
         'birth_date' => 'date',
-        'is_verified' => 'boolean',
     ];
 
-    public function attendances()
+    public function attendances(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(PatientAttendance::class);
     }
 
-    public function branches()
+    public function branches(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Branch::class, 'patient_branches')
-            ->withPivot('card_number', 'deleted_at')
+            ->withPivot('deleted_at')
             ->withTimestamps()
             ->wherePivot('deleted_at', null); // Filter out soft-deleted pivots
     }

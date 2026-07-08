@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('therapist_id')->constrained('therapists')->onDelete('cascade');
             $table->foreignId('branch_id')->constrained('branches')->onDelete('cascade');
-            $table->string('card_number')->unique();
             $table->softDeletes();
             $table->timestamps();
             $table->unique(['therapist_id', 'branch_id']);

@@ -102,24 +102,23 @@ export default function ManageSchedules({ branches }: ManageSchedulesProps) {
                     </div>
 
                     <div className="p-6">
-                        {auth.user.role?.name === 'superadmin' && (
-                            <div className="mb-8 p-4 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Select Branch to Manage
-                                </label>
-                                <select
-                                    value={selectedBranchId}
-                                    onChange={(e) => handleBranchChange(Number(e.target.value))}
-                                    className="w-full max-w-md rounded-md border-gray-300 dark:border-gray-700 dark:bg-slate-900 dark:text-white shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                                >
-                                    {branches.map((branch) => (
-                                        <option key={branch.id} value={branch.id}>
-                                            {branch.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
+                        <div className="mb-8 p-4 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Select Branch to Manage
+                            </label>
+                            <select
+                                value={selectedBranchId}
+                                onChange={(e) => handleBranchChange(Number(e.target.value))}
+                                disabled={auth.user.role?.name === 'admin'}
+                                className="w-full max-w-md rounded-md border-gray-300 dark:border-gray-700 dark:bg-slate-900 dark:text-white shadow-sm focus:border-purple-500 focus:ring-purple-500 disabled:opacity-60 disabled:bg-gray-100 dark:disabled:bg-slate-800"
+                            >
+                                {branches.map((branch) => (
+                                    <option key={branch.id} value={branch.id}>
+                                        {branch.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
                         {!selectedBranchId ? (
                             <div className="text-center py-12 text-gray-500 dark:text-gray-400">

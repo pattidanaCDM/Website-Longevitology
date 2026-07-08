@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Exports;
 
 use Carbon\Carbon;
@@ -34,7 +36,6 @@ class PatientAttendanceExport implements FromCollection, WithHeadings, WithMappi
             'Absensi CDM',
             'Tanggal',
             'Hari',
-            'No Anggota',
             'Nama Pasien',
             'Keluhan Awal',
             'Keluhan Saat Ini',
@@ -46,24 +47,11 @@ class PatientAttendanceExport implements FromCollection, WithHeadings, WithMappi
     {
         $checkIn = Carbon::parse($attendance->check_in);
 
-        // Find the card number for the branch where attendance occurred
-        $cardNumber = '-';
-        if ($attendance->patient && $attendance->branch_id) {
-            $branchPivot = $attendance->patient->branches
-                ->where('id', $attendance->branch_id)
-                ->first();
-
-            if ($branchPivot) {
-                $cardNumber = $branchPivot->pivot->card_number ?? '-';
-            }
-        }
-
         return [
             $attendance->id,
             $attendance->branch->name ?? 'CDM',
             $checkIn->format('d-m-Y'),
             $checkIn->locale('id')->isoFormat('dddd'),
-            $cardNumber,
             $attendance->patient->name ?? '-',
             $attendance->patient->initial_complaint ?? '-',
             $attendance->complaint ?? '-',

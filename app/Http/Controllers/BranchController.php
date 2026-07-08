@@ -1,27 +1,38 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Branch;
+use App\Services\BranchService;
+use App\Http\Requests\StoreBranchRequest;
+use App\Http\Requests\UpdateBranchRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 
 class BranchController extends Controller
 {
+    public function __construct(private BranchService $branchService)
+    {
+    }
+    /**
+     * Display a listing of the branches.
+     */
+    public function index(): \Inertia\Response
+    {
+        $branches = $this->branchService->getAllBranches();
+        return \Inertia\Inertia::render('ManageBranches', [
+            'branches' => $branches,
+        ]);
+    }
+
     /**
      * Store a newly created branch.
      */
-    public function store(Request $request)
+    public function store(StoreBranchRequest $request): RedirectResponse
     {
-        // Only Super Admin can create branches (handled by Policy or Middleware)
-        // If you want to use the policy: $this->authorize('create', Branch::class);
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string',
-            'map_url' => 'nullable|url',
-        ]);
-
-        Branch::create($request->all());
+        $this->branchService->store($request->validated());
 
         return redirect()->back()->with('success', 'Branch created successfully.');
     }
@@ -29,20 +40,13 @@ class BranchController extends Controller
     /**
      * Update the specified branch.
      */
-    public function update(Request $request, Branch $branch)
+    public function update(UpdateBranchRequest $request, Branch $branch): RedirectResponse
     {
-        // Check if user is authorized to update this branch
         if ($request->user()->cannot('update', $branch)) {
             abort(403, 'You do not have permission to update this branch.');
         }
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string',
-            'map_url' => 'nullable|url',
-        ]);
-
-        $branch->update($request->all());
+        $this->branchService->update($branch, $request->validated());
 
         return redirect()->back()->with('success', 'Branch updated successfully.');
     }
@@ -50,13 +54,13 @@ class BranchController extends Controller
     /**
      * Remove the specified branch.
      */
-    public function destroy(Branch $branch)
+    public function destroy(Request $request, Branch $branch): RedirectResponse
     {
-        if (request()->user()->cannot('delete', $branch)) {
+        if ($request->user()->cannot('delete', $branch)) {
             abort(403, 'You do not have permission to delete this branch.');
         }
 
-        $branch->delete();
+        $this->branchService->destroy($branch);
 
         return redirect()->back()->with('success', 'Branch deleted successfully.');
     }

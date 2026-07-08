@@ -10,8 +10,11 @@ import {
     Search,
     UserCheck,
     Eye,
+    X,
 } from "lucide-react";
 import { Button } from "@/Components/ui/button";
+import SecondaryButton from "@/Components/SecondaryButton";
+import MultiSelectSearch from "@/Components/MultiSelectSearch";
 import axios from "axios";
 
 interface Props {
@@ -20,18 +23,37 @@ interface Props {
         links: any[];
     };
     branches: Branch[];
+    filters?: {
+        search?: string;
+        branch_id?: string;
+    };
 }
 
-export default function TherapistIndex({ therapists, branches }: Props) {
+export default function TherapistIndex({ therapists, branches, filters }: Props) {
     const { auth } = usePage<PageProps>().props;
     const isSuperadmin = auth.user.role?.name === "superadmin";
 
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showViewModal, setShowViewModal] = useState(false);
+    const [assignToAll, setAssignToAll] = useState(false);
     const [selectedTherapist, setSelectedTherapist] =
         useState<Therapist | null>(null);
     const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+
+    const [searchQuery, setSearchQuery] = useState(filters?.search || "");
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        router.get(
+            route("therapists.index"),
+            { 
+                search: searchQuery, 
+                branch_id: new URLSearchParams(window.location.search).get('branch_id') || "all" 
+            },
+            { preserveState: true }
+        );
+    };
 
     // Delete State
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -99,9 +121,17 @@ export default function TherapistIndex({ therapists, branches }: Props) {
 
     const extendTherapist = () => {
         if (!verifiedTherapist) return;
+
+        const branchId = new URLSearchParams(window.location.search).get('branch_id');
+        const payload: any = { therapist_id: verifiedTherapist.id };
+
+        if (isSuperadmin && branchId && branchId !== 'all') {
+            payload.branch_id = branchId;
+        }
+
         router.post(
             route("therapists.extend"),
-            { therapist_id: verifiedTherapist.id },
+            payload,
             {
                 onSuccess: () => {
                     setShowVerifyModal(false);
@@ -112,14 +142,22 @@ export default function TherapistIndex({ therapists, branches }: Props) {
         );
     };
 
-    const { data, setData, post, put, processing, errors, reset } = useForm({
+    const bIdParam = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("branch_id") : null;
+    const targetBranchId = isSuperadmin
+        ? (bIdParam && bIdParam !== "all" ? Number(bIdParam) : null)
+        : auth.user.branch_id;
+    const isAlreadyInBranch = verifiedTherapist && targetBranchId
+        ? verifiedTherapist.branches?.some((b: any) => b.id === targetBranchId)
+        : false;
+
+    const { data, setData, post, put, processing, errors, reset, clearErrors } = useForm({
         name: "",
-        gender: "male",
+        gender: "",
         birth_date: "",
         phone: "",
         address: "",
         photo: null as File | null,
-        branch_id: auth.user.branch_id || branches[0]?.id || "",
+        branch_id: isSuperadmin ? ([] as string[]) : (auth.user.branch_id || ""),
         _method: undefined as string | undefined, // For method spoofing
     });
 
@@ -137,9 +175,10 @@ export default function TherapistIndex({ therapists, branches }: Props) {
             phone: therapist.phone || "",
             address: therapist.address || "",
             photo: null,
-            branch_id: "",
+            branch_id: isSuperadmin ? (therapist.branches?.map(b => b.id.toString()) || []) : "",
             _method: "put",
         });
+        setAssignToAll(false);
         setShowEditModal(true);
     };
 
@@ -169,6 +208,7 @@ export default function TherapistIndex({ therapists, branches }: Props) {
             post(route("therapists.store"), {
                 onSuccess: () => {
                     setShowAddModal(false);
+                    setAssignToAll(false);
                     reset();
                 },
             });
@@ -178,7 +218,7 @@ export default function TherapistIndex({ therapists, branches }: Props) {
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="font-semibold text-xl text-gray-800 leading-tight">
+                <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                     Manage Therapists
                 </h2>
             }
@@ -186,20 +226,82 @@ export default function TherapistIndex({ therapists, branches }: Props) {
             <Head title="Therapists" />
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-lg font-medium text-gray-900">
-                                Therapist List
-                            </h3>
+                            <div className="flex items-center gap-4">
+                                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                                    Therapist List
+                                </h3>
+                                {isSuperadmin && (
+                                    <select
+                                        className="rounded-md border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm shadow-sm dark:text-gray-200"
+                                        value={new URLSearchParams(window.location.search).get('branch_id') || "all"}
+                                        onChange={(e) => {
+                                            router.get(route('therapists.index'), { branch_id: e.target.value }, { preserveState: true });
+                                        }}
+                                    >
+                                        <option value="all">Semua Cabang</option>
+                                        {branches.map(b => (
+                                            <option key={b.id} value={b.id}>{b.name}</option>
+                                        ))}
+                                    </select>
+                                )}
+                                <form onSubmit={handleSearch} className="flex gap-2 relative">
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            placeholder="Search name/phone..."
+                                            value={searchQuery}
+                                            onChange={(e) => {
+                                                setSearchQuery(e.target.value);
+                                                if (e.target.value === "") {
+                                                    router.get(
+                                                        route("therapists.index"),
+                                                        { 
+                                                            search: "", 
+                                                            branch_id: new URLSearchParams(window.location.search).get('branch_id') || "all" 
+                                                        },
+                                                        { preserveState: true }
+                                                    );
+                                                }
+                                            }}
+                                            className="rounded-md border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm shadow-sm dark:text-gray-200 pr-8"
+                                        />
+                                        {searchQuery && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setSearchQuery("");
+                                                    router.get(
+                                                        route("therapists.index"),
+                                                        { 
+                                                            search: "", 
+                                                            branch_id: new URLSearchParams(window.location.search).get('branch_id') || "all" 
+                                                        },
+                                                        { preserveState: true }
+                                                    );
+                                                }}
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                    </div>
+                                    <Button type="submit" variant="secondary" className="px-3 dark:bg-slate-700 dark:text-gray-200 dark:hover:bg-slate-600">
+                                        <Search className="w-4 h-4" />
+                                    </Button>
+                                </form>
+                            </div>
                             <div className="flex gap-2">
-                                <Button
-                                    onClick={() => setShowVerifyModal(true)}
-                                    variant="outline"
-                                    className="flex items-center gap-2"
-                                >
-                                    <UserCheck className="w-4 h-4" /> Verify /
-                                    Add Existing
-                                </Button>
+                                {(!isSuperadmin || (new URLSearchParams(window.location.search).get('branch_id') && new URLSearchParams(window.location.search).get('branch_id') !== 'all')) && (
+                                    <Button
+                                        onClick={() => setShowVerifyModal(true)}
+                                        variant="outline"
+                                        className="flex items-center gap-2 dark:border-slate-800 dark:text-gray-200 dark:hover:bg-slate-800"
+                                    >
+                                        <UserCheck className="w-4 h-4" /> Verify / Add Existing
+                                    </Button>
+                                )}
                                 <Button
                                     onClick={() => setShowAddModal(true)}
                                     className="flex items-center gap-2"
@@ -210,30 +312,27 @@ export default function TherapistIndex({ therapists, branches }: Props) {
                         </div>
 
                         <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
+                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+                                <thead className="bg-gray-50 dark:bg-slate-800/50">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Photo
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             Name
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             Gender
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             Phone
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             Branch
                                         </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             Actions
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
+                                <tbody className="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-gray-800">
                                     {therapists.data.map((therapist) => (
                                         <tr key={therapist.id}>
                                             <td className="px-6 py-4 whitespace-nowrap">
@@ -249,23 +348,33 @@ export default function TherapistIndex({ therapists, branches }: Props) {
                                                         }
                                                     />
                                                 ) : (
-                                                    <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-400">
+                                                    <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-slate-800 flex items-center justify-center text-gray-400 dark:text-gray-500">
                                                         <User className="h-6 w-6" />
                                                     </div>
                                                 )}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-gray-900">
-                                                    {therapist.name}
+                                                <div className="flex items-center">
+                                                    <div className="ml-0">
+                                                        <div className="text-sm font-medium text-gray-900 dark:text-gray-200">
+                                                            {therapist.name}
+                                                        </div>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                            {therapist.phone}
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap capitalize text-sm text-gray-500">
+                                            <td className="px-6 py-4 whitespace-nowrap capitalize text-sm text-gray-500 dark:text-gray-400">
                                                 {therapist.gender}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                                 {therapist.phone}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td
+                                                className="px-6 py-4 text-sm text-gray-500 max-w-[200px] truncate"
+                                                title={therapist.branches?.map((b) => b.name).join(", ")}
+                                            >
                                                 {therapist.branches
                                                     ?.map((b) => b.name)
                                                     .join(", ")}
@@ -276,7 +385,7 @@ export default function TherapistIndex({ therapists, branches }: Props) {
                                                         onClick={() =>
                                                             openView(therapist)
                                                         }
-                                                        className="text-gray-600 hover:text-gray-900"
+                                                        className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                                                         title="View Details"
                                                     >
                                                         <Eye className="w-4 h-4" />
@@ -285,7 +394,7 @@ export default function TherapistIndex({ therapists, branches }: Props) {
                                                         onClick={() =>
                                                             openEdit(therapist)
                                                         }
-                                                        className="text-indigo-600 hover:text-indigo-900"
+                                                        className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                                                         title="Edit"
                                                     >
                                                         <Pencil className="w-4 h-4" />
@@ -296,7 +405,7 @@ export default function TherapistIndex({ therapists, branches }: Props) {
                                                                 therapist,
                                                             )
                                                         }
-                                                        className="text-red-600 hover:text-red-900"
+                                                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                                                         title="Delete"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
@@ -314,7 +423,7 @@ export default function TherapistIndex({ therapists, branches }: Props) {
             {/* Modal */}
             {(showAddModal || showEditModal) && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
+                    <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto relative">
                         <div
                             className="absolute top-4 right-4 cursor-pointer"
                             onClick={() => {
@@ -325,7 +434,7 @@ export default function TherapistIndex({ therapists, branches }: Props) {
                         >
                             ✖
                         </div>
-                        <h2 className="text-lg font-bold mb-4">
+                        <h2 className="text-lg font-bold mb-4 dark:text-white">
                             {showEditModal
                                 ? "Edit Therapist"
                                 : "Add New Therapist"}
@@ -333,17 +442,17 @@ export default function TherapistIndex({ therapists, branches }: Props) {
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Name
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Name <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={data.name}
-                                    onChange={(e) =>
-                                        setData("name", e.target.value)
-                                    }
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                    required
+                                    onChange={(e) => {
+                                        setData("name", e.target.value);
+                                        clearErrors("name");
+                                    }}
+                                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                 />
                                 {errors.name && (
                                     <p className="text-red-500 text-xs mt-1">
@@ -354,35 +463,39 @@ export default function TherapistIndex({ therapists, branches }: Props) {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Gender
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Gender <span className="text-red-500">*</span>
                                     </label>
                                     <select
-                                        value={data.gender}
-                                        onChange={(e) =>
-                                            setData("gender", e.target.value)
-                                        }
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                        value={data.gender || ""}
+                                        onChange={(e) => {
+                                            setData("gender", e.target.value);
+                                            clearErrors("gender");
+                                        }}
+                                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                     >
+                                        <option value="">Select Gender</option>
                                         <option value="male">Male</option>
                                         <option value="female">Female</option>
                                     </select>
+                                    {errors.gender && (
+                                        <p className="text-red-500 text-xs mt-1">
+                                            {errors.gender}
+                                        </p>
+                                    )}
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Birth Date
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Birth Date <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="date"
                                         value={data.birth_date}
-                                        onChange={(e) =>
-                                            setData(
-                                                "birth_date",
-                                                e.target.value,
-                                            )
-                                        }
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                        required
+                                        onChange={(e) => {
+                                            setData("birth_date", e.target.value);
+                                            clearErrors("birth_date");
+                                        }}
+                                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                     />
                                     {errors.birth_date && (
                                         <p className="text-red-500 text-xs mt-1">
@@ -393,39 +506,65 @@ export default function TherapistIndex({ therapists, branches }: Props) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Phone
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Phone <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={data.phone}
-                                    onChange={(e) =>
-                                        setData("phone", e.target.value)
-                                    }
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    onChange={(e) => {
+                                        setData("phone", e.target.value);
+                                        clearErrors("phone");
+                                    }}
+                                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                 />
+                                {errors.phone && (
+                                    <p className="text-red-500 text-xs mt-1">
+                                        {errors.phone}
+                                    </p>
+                                )}
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Address <span className="text-red-500">*</span>
+                                </label>
+                                <textarea
+                                    value={data.address}
+                                    onChange={(e) => {
+                                        setData("address", e.target.value);
+                                        clearErrors("address");
+                                    }}
+                                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                />
+                                {errors.address && (
+                                    <p className="text-red-500 text-xs mt-1">
+                                        {errors.address}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Photo
                                 </label>
                                 <input
                                     type="file"
-                                    onChange={(e) =>
+                                    onChange={(e) => {
                                         setData(
                                             "photo",
                                             e.target.files
                                                 ? e.target.files[0]
                                                 : null,
-                                        )
-                                    }
-                                    className="mt-1 block w-full text-sm text-gray-500
+                                        );
+                                        clearErrors("photo");
+                                    }}
+                                    className="mt-1 block w-full text-sm text-gray-500 dark:text-gray-400
                                 file:mr-4 file:py-2 file:px-4
-                                file:rounded-full file:border-0
+                                file:rounded-md file:border-0
                                 file:text-sm file:font-semibold
-                                file:bg-violet-50 file:text-violet-700
-                                hover:file:bg-violet-100"
+                                file:bg-indigo-50 file:text-indigo-700
+                                hover:file:bg-indigo-100"
                                 />
                                 {errors.photo && (
                                     <p className="text-red-500 text-xs mt-1">
@@ -437,67 +576,89 @@ export default function TherapistIndex({ therapists, branches }: Props) {
                                 {(data.photo ||
                                     (showEditModal &&
                                         selectedTherapist?.photo)) && (
-                                    <div className="mt-2">
-                                        <p className="text-sm text-gray-500 mb-1">
-                                            Preview:
-                                        </p>
-                                        <div className="relative inline-block group">
-                                            <img
-                                                src={
-                                                    data.photo
-                                                        ? URL.createObjectURL(
-                                                              data.photo,
-                                                          )
-                                                        : selectedTherapist?.photo
-                                                          ? `/storage/${selectedTherapist.photo}`
-                                                          : ""
-                                                }
-                                                alt="Preview"
-                                                className="h-20 w-20 rounded-full object-cover border border-gray-200"
-                                            />
-                                            <button
-                                                type="button"
-                                                className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                                onClick={() => {
-                                                    const src = data.photo
-                                                        ? URL.createObjectURL(
-                                                              data.photo,
-                                                          )
-                                                        : selectedTherapist?.photo
-                                                          ? `/storage/${selectedTherapist.photo}`
-                                                          : "";
-                                                    setSelectedPhoto(src);
-                                                }}
-                                            >
-                                                <span className="text-white text-xs font-bold">
-                                                    View
-                                                </span>
-                                            </button>
+                                        <div className="mt-2">
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                                                Preview:
+                                            </p>
+                                            <div className="relative inline-block group">
+                                                <img
+                                                    src={
+                                                        data.photo
+                                                            ? URL.createObjectURL(
+                                                                data.photo,
+                                                            )
+                                                            : selectedTherapist?.photo
+                                                                ? `/storage/${selectedTherapist.photo}`
+                                                                : ""
+                                                    }
+                                                    alt="Preview"
+                                                    className="h-20 w-20 rounded-full object-cover border border-gray-200 dark:border-slate-800"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    onClick={() => {
+                                                        const src = data.photo
+                                                            ? URL.createObjectURL(
+                                                                data.photo,
+                                                            )
+                                                            : selectedTherapist?.photo
+                                                                ? `/storage/${selectedTherapist.photo}`
+                                                                : "";
+                                                        setSelectedPhoto(src);
+                                                    }}
+                                                >
+                                                    <span className="text-white text-xs font-bold">
+                                                        View
+                                                    </span>
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
                             </div>
 
-                            {!showEditModal && isSuperadmin && (
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Branch
+                            {/* Show branch assignment for Superadmin (Create and Edit) */}
+                            {isSuperadmin && (
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Assign to Branch <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={data.branch_id}
-                                        onChange={(e) =>
-                                            setData("branch_id", e.target.value)
-                                        }
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                        required
-                                    >
-                                        <option value="">Select Branch</option>
-                                        {branches.map((b) => (
-                                            <option key={b.id} value={b.id}>
-                                                {b.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <div className="flex items-center gap-4">
+                                        <label className="flex items-center gap-2 text-sm dark:text-gray-300">
+                                            <input
+                                                type="radio"
+                                                checked={!assignToAll}
+                                                onChange={() => {
+                                                    setAssignToAll(false);
+                                                    setData("branch_id", []);
+                                                }}
+                                            />
+                                            Specific Branches
+                                        </label>
+                                        <label className="flex items-center gap-2 text-sm dark:text-gray-300">
+                                            <input
+                                                type="radio"
+                                                checked={assignToAll}
+                                                onChange={() => {
+                                                    setAssignToAll(true);
+                                                    setData("branch_id", branches.map(b => b.id.toString()));
+                                                }}
+                                            />
+                                            All Branches
+                                        </label>
+                                    </div>
+                                    {!assignToAll && (
+                                        <div>
+                                            <MultiSelectSearch
+                                                options={branches}
+                                                value={data.branch_id as any}
+                                                onChange={(val) => {
+                                                    setData("branch_id", val as string[]);
+                                                }}
+                                                placeholder="Search branches..."
+                                            />
+                                        </div>
+                                    )}
                                     {errors.branch_id && (
                                         <p className="text-red-500 text-xs mt-1">
                                             {errors.branch_id}
@@ -586,8 +747,8 @@ export default function TherapistIndex({ therapists, branches }: Props) {
                                         <p className="mt-1 text-sm text-gray-900">
                                             {selectedTherapist.birth_date
                                                 ? new Date(
-                                                      selectedTherapist.birth_date,
-                                                  ).toLocaleDateString()
+                                                    selectedTherapist.birth_date,
+                                                ).toLocaleDateString()
                                                 : "-"}
                                         </p>
                                     </div>
@@ -608,7 +769,7 @@ export default function TherapistIndex({ therapists, branches }: Props) {
                                     </h4>
                                     <div className="bg-gray-50 rounded-md p-4 max-h-40 overflow-y-auto">
                                         {selectedTherapist.branches &&
-                                        selectedTherapist.branches.length >
+                                            selectedTherapist.branches.length >
                                             0 ? (
                                             <ul className="space-y-2">
                                                 {selectedTherapist.branches.map(
@@ -619,11 +780,6 @@ export default function TherapistIndex({ therapists, branches }: Props) {
                                                         >
                                                             <span className="font-medium text-gray-700">
                                                                 {branch.name}
-                                                            </span>
-                                                            <span className="text-gray-500 bg-white px-2 py-1 rounded border text-xs">
-                                                                {branch.pivot
-                                                                    ?.card_number ||
-                                                                    "No Code"}
                                                             </span>
                                                         </li>
                                                     ),
@@ -644,8 +800,8 @@ export default function TherapistIndex({ therapists, branches }: Props) {
                                     <div className="bg-white rounded-md border border-gray-200 shadow-sm max-h-60 overflow-y-auto">
                                         {(selectedTherapist as any)
                                             .attendances &&
-                                        (selectedTherapist as any).attendances
-                                            .length > 0 ? (
+                                            (selectedTherapist as any).attendances
+                                                .length > 0 ? (
                                             <table className="min-w-full divide-y divide-gray-200">
                                                 <thead className="bg-gray-50 sticky top-0">
                                                     <tr>
@@ -704,7 +860,7 @@ export default function TherapistIndex({ therapists, branches }: Props) {
                         </div>
 
                         <div className="mt-8 flex justify-end">
-                            <Button onClick={() => setShowViewModal(false)}>
+                            <Button onClick={() => setShowViewModal(false)} className="dark:bg-slate-700 dark:text-gray-200 dark:hover:bg-slate-600">
                                 Close
                             </Button>
                         </div>
@@ -714,9 +870,9 @@ export default function TherapistIndex({ therapists, branches }: Props) {
             {/* Verify Modal */}
             {showVerifyModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
+                    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md p-6 relative text-gray-900 dark:text-gray-100">
                         <div
-                            className="absolute top-4 right-4 cursor-pointer"
+                            className="absolute top-4 right-4 cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                             onClick={() => {
                                 setShowVerifyModal(false);
                                 setVerifiedTherapist(null);
@@ -732,8 +888,8 @@ export default function TherapistIndex({ therapists, branches }: Props) {
 
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Search by Phone or Card Number
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Search by Phone
                                 </label>
                                 <div className="flex gap-2 mt-1">
                                     <input
@@ -742,8 +898,8 @@ export default function TherapistIndex({ therapists, branches }: Props) {
                                         onChange={(e) =>
                                             setVerifySearch(e.target.value)
                                         }
-                                        placeholder="Enter phone or card number..."
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                        placeholder="Enter phone number..."
+                                        className="block w-full rounded-md border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                         onKeyDown={(e) =>
                                             e.key === "Enter" &&
                                             verifyTherapist()
@@ -763,14 +919,14 @@ export default function TherapistIndex({ therapists, branches }: Props) {
                                     </Button>
                                 </div>
                                 {verifyError && (
-                                    <p className="text-red-500 text-xs mt-1">
+                                    <p className="text-red-500 dark:text-red-400 text-xs mt-1">
                                         {verifyError}
                                     </p>
                                 )}
                             </div>
 
                             {verifiedTherapist && (
-                                <div className="border rounded-md p-4 bg-gray-50 flex items-center gap-4">
+                                <div className="border dark:border-slate-700 rounded-md p-4 bg-gray-50 dark:bg-slate-700/50 flex items-center gap-4">
                                     {verifiedTherapist.photo ? (
                                         <img
                                             src={`/storage/${verifiedTherapist.photo}`}
@@ -778,15 +934,15 @@ export default function TherapistIndex({ therapists, branches }: Props) {
                                             className="h-16 w-16 rounded-full object-cover"
                                         />
                                     ) : (
-                                        <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-400">
+                                        <div className="h-16 w-16 rounded-full bg-gray-200 dark:bg-slate-600 flex items-center justify-center text-gray-400 dark:text-gray-300">
                                             <User className="h-8 w-8" />
                                         </div>
                                     )}
                                     <div className="flex-1">
-                                        <h4 className="font-bold text-gray-900">
+                                        <h4 className="font-bold text-gray-900 dark:text-white">
                                             {verifiedTherapist.name}
                                         </h4>
-                                        <p className="text-sm text-gray-500">
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
                                             {verifiedTherapist.phone}
                                         </p>
                                         <div className="text-xs text-gray-400 mt-1">
@@ -799,8 +955,14 @@ export default function TherapistIndex({ therapists, branches }: Props) {
                                 </div>
                             )}
 
+                            {isAlreadyInBranch && (
+                                <p className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 rounded-md">
+                                    This therapist is already registered in the selected branch.
+                                </p>
+                            )}
+
                             {verifiedTherapist && (
-                                <div className="flex justify-end gap-2 mt-4 pt-4 border-t">
+                                <div className="flex justify-end gap-2 mt-4 pt-4 border-t dark:border-slate-700">
                                     <Button
                                         variant="secondary"
                                         onClick={() => {
@@ -808,10 +970,11 @@ export default function TherapistIndex({ therapists, branches }: Props) {
                                             setVerifiedTherapist(null);
                                             setVerifySearch("");
                                         }}
+                                        className="dark:bg-slate-700 dark:text-gray-200 dark:hover:bg-slate-600"
                                     >
                                         Cancel
                                     </Button>
-                                    <Button onClick={extendTherapist}>
+                                    <Button onClick={extendTherapist} disabled={isAlreadyInBranch} className="dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-700">
                                         Add to My Branch
                                     </Button>
                                 </div>
@@ -844,8 +1007,8 @@ export default function TherapistIndex({ therapists, branches }: Props) {
             {/* Delete Confirmation Modal for Super Admin */}
             {showDeleteModal && therapistToDelete && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-sm p-6 relative">
-                        <h2 className="text-lg font-bold mb-4 text-red-600">
+                    <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl w-full max-w-sm p-6 relative text-gray-900 dark:text-gray-100">
+                        <h2 className="text-lg font-bold mb-4 text-red-600 dark:text-red-400">
                             Delete Therapist
                         </h2>
 
@@ -877,7 +1040,7 @@ export default function TherapistIndex({ therapists, branches }: Props) {
 
                                     {deleteDetails.type === "branch" && (
                                         <select
-                                            className="ml-6 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                            className="ml-6 block w-full rounded-md border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                             value={deleteDetails.branch_id}
                                             onChange={(e) =>
                                                 setDeleteDetails((prev) => ({
@@ -934,12 +1097,13 @@ export default function TherapistIndex({ therapists, branches }: Props) {
                             <Button
                                 variant="secondary"
                                 onClick={() => setShowDeleteModal(false)}
+                                className="dark:bg-slate-700 dark:text-gray-200 dark:hover:bg-slate-600"
                             >
                                 Cancel
                             </Button>
                             <Button
                                 onClick={() => handleDelete()}
-                                className="bg-red-600 hover:bg-red-700 text-white"
+                                className="bg-red-600 hover:bg-red-700 text-white dark:bg-red-700 dark:hover:bg-red-800"
                                 disabled={
                                     isSuperadmin &&
                                     deleteDetails.type === "branch" &&

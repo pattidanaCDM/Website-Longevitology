@@ -15,8 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('patient_id')->constrained('patients')->onDelete('cascade');
             $table->foreignId('branch_id')->constrained('branches')->onDelete('cascade');
+            $table->text('complaint')->nullable();
             $table->dateTime('check_in');
             $table->dateTime('check_out')->nullable();
+            $table->boolean('is_manual')->default(false);
             $table->index(['check_in', 'check_out']);
             $table->softDeletes();
             $table->timestamps();

@@ -22,7 +22,6 @@ return new class extends Migration
             $table->string('initial_complaint');
             $table->string('current_complaint')->nullable();
             $table->string('cakra')->nullable();
-            $table->boolean('is_verified')->default(false);
             $table->softDeletes();
             $table->timestamps();
         });

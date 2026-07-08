@@ -1,0 +1,32 @@
+# Laravel Development Standards & Best Practices
+
+## 1. Arsitektur Umum
+- **Thin Controllers:** Controller hanya boleh menerima request, memanggil Service/Action, dan mengembalikan response. Tidak boleh ada logika bisnis di Controller.
+- **Service Layer / Actions:** Letakkan logika bisnis (perhitungan, integrasi API, logika kompleks) di folder `app/Services` atau `app/Actions`.
+- **DRY (Don't Repeat Yourself):** Jika logika diulang lebih dari 2 kali, pindahkan ke class/helper/trait/component.
+
+## 2. Validasi & Request
+- **Form Requests:** Wajib menggunakan `FormRequest` untuk validasi. Jangan lakukan validasi di dalam controller menggunakan `$request->validate()`.
+- **Strict Validation:** Gunakan aturan validasi yang spesifik (misal: `exists:users,id` daripada sekadar `integer`).
+
+## 3. Eloquent & Model
+- **Mass Assignment:** Pastikan properti `$fillable` di Model selalu diisi dengan benar.
+- **Relationships:** Gunakan Eager Loading (`->with()`) untuk mencegah N+1 Query Problem.
+- **Scopes:** Gunakan Query Scopes untuk logika query yang sering dipakai (misal: `scopeActive()`).
+
+## 4. Coding Style
+- **PHP 8.x:** Gunakan fitur modern (Constructor Property Promotion, Null Coalescing Operator `??`, Match expression).
+- **Type Hinting:** Wajib menggunakan strict typing (`declare(strict_types=1);`) dan Type Hinting pada parameter dan return value function.
+- **Naming:**
+    - Variable: `camelCase`
+    - Class: `PascalCase`
+    - Method: `camelCase`
+    - File: `PascalCase`
+
+## 5. Views & Components
+- **Blade Components:** Gunakan komponen untuk setiap bagian UI yang repetitif.
+- **Localization:** Gunakan helper `__('key')` untuk semua teks statis agar mudah diterjemahkan.
+
+## 6. Keamanan
+- **No Hardcoding:** Jangan simpan data sensitif/config langsung di kode. Gunakan file `.env` dan `config/*.php`.
+- **Sanitization:** Selalu asumsikan input user berbahaya. Gunakan fitur bawaan Laravel (Blade escaping `{{ }}`) untuk mencegah XSS.

@@ -1,19 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Branch;
-use App\Models\Schedule;
-use Illuminate\Http\Request;
+use App\Services\ScheduleService;
+use App\Http\Requests\SyncScheduleRequest;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class ScheduleController extends Controller
 {
+    public function __construct(private ScheduleService $scheduleService)
+    {
+    }
+
     /**
      * Display the schedule management page.
      */
-    public function index()
+    public function index(): Response
     {
+        /** @var \App\Models\User $user */
         $user = auth()->user();
         $branches = [];
 
@@ -34,8 +43,9 @@ class ScheduleController extends Controller
     /**
      * Store or update schedules for a branch.
      */
-    public function sync(Request $request, Branch $branch)
+    public function sync(SyncScheduleRequest $request, Branch $branch): RedirectResponse
     {
+        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         // Security check
@@ -43,23 +53,7 @@ class ScheduleController extends Controller
             abort(403, 'Unauthorized access to this branch.');
         }
 
-        $request->validate([
-            'schedules' => 'required|array',
-            'schedules.*.day' => 'required|string',
-            'schedules.*.time_start' => 'required',
-            'schedules.*.time_end' => 'required',
-        ]);
-
-        // Delete existing schedules and recreate
-        $branch->schedules()->delete();
-
-        foreach ($request->schedules as $sched) {
-            $branch->schedules()->create([
-                'day' => $sched['day'],
-                'time_start' => $sched['time_start'],
-                'time_end' => $sched['time_end'],
-            ]);
-        }
+        $this->scheduleService->sync($branch, $request->validated('schedules'));
 
         return redirect()->back()->with('success', 'Schedules updated successfully.');
     }

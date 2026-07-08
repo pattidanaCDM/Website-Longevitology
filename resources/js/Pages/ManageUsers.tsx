@@ -4,6 +4,7 @@ import { Head, useForm } from '@inertiajs/react';
 import { User, Role, Branch } from '@/types';
 import { Pencil, Trash2, Plus, Key, Users as UsersIcon, UserCog, MapPin } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
+import Modal from '@/Components/Modal';
 
 interface ManageUsersProps {
     users: (User & { role: Role; branch?: Branch })[];
@@ -12,15 +13,10 @@ interface ManageUsersProps {
 }
 
 export default function ManageUsers({ users, roles, branches }: ManageUsersProps) {
-    const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'branches'>('users');
+    const [activeTab, setActiveTab] = useState<'users' | 'roles'>('users');
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showResetModal, setShowResetModal] = useState(false);
-
-    // Branch Modals
-    const [showAddBranchModal, setShowAddBranchModal] = useState(false);
-    const [showEditBranchModal, setShowEditBranchModal] = useState(false);
-    const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
 
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
@@ -39,15 +35,13 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
         branch_id: '',
     });
 
-    const { data: branchData, setData: setBranchData, post: postBranch, put: putBranch, processing: branchProcessing, errors: branchErrors, reset: resetBranch } = useForm({
-        name: '',
-        address: '',
-        map_url: '',
-    });
+
 
     const { data: resetData, setData: setResetData, post: postReset, processing: resetProcessing } = useForm({});
 
-    const { delete: destroy } = useForm();
+    const { delete: destroy, processing: deleteProcessing } = useForm();
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
     const handleAddUser = (e: React.FormEvent) => {
         e.preventDefault();
@@ -71,39 +65,24 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
         }
     };
 
-    const handleDeleteUser = (user: User) => {
-        if (confirm(`Are you sure you want to delete ${user.name}?`)) {
-            destroy(route('users.destroy', user.id));
-        }
+    const confirmDeleteUser = (user: User) => {
+        setUserToDelete(user);
+        setShowDeleteModal(true);
     };
 
-    const handleAddBranch = (e: React.FormEvent) => {
+    const handleDeleteUser = (e: React.FormEvent) => {
         e.preventDefault();
-        postBranch(route('branches.store'), {
-            onSuccess: () => {
-                setShowAddBranchModal(false);
-                resetBranch();
-            },
-        });
-    };
-
-    const handleEditBranch = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (selectedBranch) {
-            putBranch(route('branches.update', selectedBranch.id), {
+        if (userToDelete) {
+            destroy(route('users.destroy', userToDelete.id), {
                 onSuccess: () => {
-                    setShowEditBranchModal(false);
-                    setSelectedBranch(null);
-                },
+                    setShowDeleteModal(false);
+                    setUserToDelete(null);
+                }
             });
         }
     };
 
-    const handleDeleteBranch = (branch: Branch) => {
-        if (confirm(`Are you sure you want to delete ${branch.name}?`)) {
-            destroy(route('branches.destroy', branch.id));
-        }
-    };
+
 
     const handleResetPassword = (e: React.FormEvent) => {
         e.preventDefault();
@@ -128,15 +107,7 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
         setShowEditModal(true);
     };
 
-    const openEditBranchModal = (branch: Branch) => {
-        setSelectedBranch(branch);
-        setBranchData({
-            name: branch.name,
-            address: branch.address,
-            map_url: branch.map_url || '',
-        });
-        setShowEditBranchModal(true);
-    };
+
 
     const openResetModal = (user: User) => {
         setSelectedUser(user);
@@ -177,16 +148,6 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
                             >
                                 <UserCog className="w-4 h-4" />
                                 Roles
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('branches')}
-                                className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'branches'
-                                    ? 'border-[#ad2c90] text-[#ad2c90]'
-                                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
-                                    }`}
-                            >
-                                <MapPin className="w-4 h-4" />
-                                Branches
                             </button>
                         </nav>
                     </div>
@@ -247,7 +208,7 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
                                                                 <Key className="w-4 h-4" />
                                                             </button>
                                                             <button
-                                                                onClick={() => handleDeleteUser(user)}
+                                                                onClick={() => confirmDeleteUser(user)}
                                                                 className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                                                                 title="Delete User"
                                                             >
@@ -291,66 +252,15 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
                             </div>
                         )}
 
-                        {activeTab === 'branches' && (
-                            <div>
-                                <div className="flex justify-between items-center mb-6">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">All Branches</h3>
-                                    <Button
-                                        onClick={() => setShowAddBranchModal(true)}
-                                        className="bg-gradient-to-r from-[#ad2c90] to-[#5400d4] hover:from-[#7a2ce0] hover:to-[#ad2c90]"
-                                    >
-                                        <Plus className="w-4 h-4 mr-2" />
-                                        Add Branch
-                                    </Button>
-                                </div>
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                        <thead className="bg-gray-50 dark:bg-slate-800">
-                                            <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Branch Name</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Address</th>
-                                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-gray-700">
-                                            {branches.map((branch) => (
-                                                <tr key={branch.id}>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                                        {branch.name}
-                                                    </td>
-                                                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{branch.address}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                        <div className="flex justify-end gap-2">
-                                                            <button
-                                                                onClick={() => openEditBranchModal(branch)}
-                                                                className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                                                            >
-                                                                <Pencil className="w-4 h-4" />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleDeleteBranch(branch)}
-                                                                className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                                            >
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        )}
+
                     </div>
                 </div>
             </div>
 
             {/* Add User Modal */}
-            {showAddModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-slate-900 rounded-lg p-6 w-full max-w-md">
-                        <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Add New User</h3>
+            <Modal show={showAddModal} onClose={() => { setShowAddModal(false); reset(); }} maxWidth="md">
+                <div className="p-6">
+                    <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Add New User</h3>
                         <form onSubmit={handleAddUser} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
@@ -418,15 +328,13 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
                                 </Button>
                             </div>
                         </form>
-                    </div>
                 </div>
-            )}
+            </Modal>
 
             {/* Edit User Modal */}
-            {showEditModal && selectedUser && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-slate-900 rounded-lg p-6 w-full max-w-md">
-                        <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Edit User</h3>
+            <Modal show={showEditModal} onClose={() => setShowEditModal(false)} maxWidth="md">
+                <div className="p-6">
+                    <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Edit User</h3>
                         <form onSubmit={handleEditUser} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
@@ -484,113 +392,17 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
                                 </Button>
                             </div>
                         </form>
-                    </div>
                 </div>
-            )}
+            </Modal>
 
-            {/* Add Branch Modal */}
-            {showAddBranchModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-slate-900 rounded-lg p-6 w-full max-w-md">
-                        <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Add New Branch</h3>
-                        <form onSubmit={handleAddBranch} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Branch Name</label>
-                                <input
-                                    type="text"
-                                    value={branchData.name}
-                                    onChange={(e) => setBranchData('name', e.target.value)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-slate-800 dark:text-white shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                                />
-                                {branchErrors.name && <p className="mt-1 text-sm text-red-600">{branchErrors.name}</p>}
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
-                                <textarea
-                                    value={branchData.address}
-                                    onChange={(e) => setBranchData('address', e.target.value)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-slate-800 dark:text-white shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                                    rows={3}
-                                />
-                                {branchErrors.address && <p className="mt-1 text-sm text-red-600">{branchErrors.address}</p>}
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Map URL (Optional)</label>
-                                <input
-                                    type="text"
-                                    value={branchData.map_url}
-                                    onChange={(e) => setBranchData('map_url', e.target.value)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-slate-800 dark:text-white shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                                />
-                            </div>
-                            <div className="flex justify-end gap-2">
-                                <Button type="button" onClick={() => setShowAddBranchModal(false)} variant="outline">
-                                    Cancel
-                                </Button>
-                                <Button type="submit" disabled={branchProcessing} className="bg-gradient-to-r from-[#ad2c90] to-[#5400d4]">
-                                    Add Branch
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
 
-            {/* Edit Branch Modal */}
-            {showEditBranchModal && selectedBranch && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-slate-900 rounded-lg p-6 w-full max-w-md">
-                        <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Edit Branch</h3>
-                        <form onSubmit={handleEditBranch} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Branch Name</label>
-                                <input
-                                    type="text"
-                                    value={branchData.name}
-                                    onChange={(e) => setBranchData('name', e.target.value)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-slate-800 dark:text-white shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                                />
-                                {branchErrors.name && <p className="mt-1 text-sm text-red-600">{branchErrors.name}</p>}
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
-                                <textarea
-                                    value={branchData.address}
-                                    onChange={(e) => setBranchData('address', e.target.value)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-slate-800 dark:text-white shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                                    rows={3}
-                                />
-                                {branchErrors.address && <p className="mt-1 text-sm text-red-600">{branchErrors.address}</p>}
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Map URL (Optional)</label>
-                                <input
-                                    type="text"
-                                    value={branchData.map_url}
-                                    onChange={(e) => setBranchData('map_url', e.target.value)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-slate-800 dark:text-white shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                                />
-                            </div>
-                            <div className="flex justify-end gap-2">
-                                <Button type="button" onClick={() => setShowEditBranchModal(false)} variant="outline">
-                                    Cancel
-                                </Button>
-                                <Button type="submit" disabled={branchProcessing} className="bg-gradient-to-r from-[#ad2c90] to-[#5400d4]">
-                                    Update Branch
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
 
             {/* Send Password Reset Email Modal */}
-            {showResetModal && selectedUser && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-slate-900 rounded-lg p-6 w-full max-w-md">
-                        <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Send Password Reset Email</h3>
+            <Modal show={showResetModal} onClose={() => setShowResetModal(false)} maxWidth="md">
+                <div className="p-6">
+                    <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Send Password Reset Email</h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                            A password reset link will be sent to <strong>{selectedUser.email}</strong>. The user will receive an email with instructions to reset their password.
+                            A password reset link will be sent to <strong>{selectedUser?.email}</strong>. The user will receive an email with instructions to reset their password.
                         </p>
                         <form onSubmit={handleResetPassword} className="space-y-4">
                             <div className="flex justify-end gap-2">
@@ -602,9 +414,36 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
                                 </Button>
                             </div>
                         </form>
+                </div>
+            </Modal>
+
+            {/* Delete User Modal */}
+            <Modal show={showDeleteModal} onClose={() => setShowDeleteModal(false)} maxWidth="sm">
+                <div className="p-6">
+                    <h2 className="text-lg font-bold mb-4 text-red-600 dark:text-red-400">
+                        Delete User
+                    </h2>
+                    <p className="text-gray-700 dark:text-gray-300">
+                        Are you sure you want to delete <strong>{userToDelete?.name}</strong>? This action cannot be undone.
+                    </p>
+                    <div className="mt-6 flex justify-end gap-2">
+                        <Button
+                            variant="secondary"
+                            onClick={() => setShowDeleteModal(false)}
+                            className="dark:bg-slate-700 dark:text-gray-200 dark:hover:bg-slate-600"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleDeleteUser}
+                            disabled={deleteProcessing}
+                            className="bg-red-600 hover:bg-red-700 text-white dark:bg-red-700 dark:hover:bg-red-800"
+                        >
+                            Confirm Delete
+                        </Button>
                     </div>
                 </div>
-            )}
+            </Modal>
         </AuthenticatedLayout>
     );
 }
