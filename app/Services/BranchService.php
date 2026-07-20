@@ -15,7 +15,7 @@ class BranchService
      */
     public function getAllBranches(): \Illuminate\Database\Eloquent\Collection
     {
-        return Branch::all();
+        return Branch::with(['contacts', 'photos'])->get();
     }
 
     /**
@@ -26,7 +26,20 @@ class BranchService
      */
     public function store(array $data): Branch
     {
-        return Branch::create($data);
+        $branch = Branch::create(\Illuminate\Support\Arr::except($data, ['contacts', 'photos']));
+
+        if (isset($data['contacts']) && is_array($data['contacts'])) {
+            $branch->contacts()->createMany($data['contacts']);
+        }
+
+        if (isset($data['photos']) && is_array($data['photos'])) {
+            foreach ($data['photos'] as $photo) {
+                $path = $photo->store('branches/photos', 'public');
+                $branch->photos()->create(['photo_path' => $path]);
+            }
+        }
+
+        return $branch;
     }
 
     /**
@@ -38,7 +51,27 @@ class BranchService
      */
     public function update(Branch $branch, array $data): void
     {
-        $branch->update($data);
+        $branch->update(\Illuminate\Support\Arr::except($data, ['contacts', 'photos', 'deleted_photo_ids']));
+
+        if (isset($data['contacts'])) {
+            $branch->contacts()->delete(); // Replace all contacts
+            $branch->contacts()->createMany($data['contacts']);
+        }
+
+        if (isset($data['deleted_photo_ids']) && is_array($data['deleted_photo_ids'])) {
+            $photosToDelete = $branch->photos()->whereIn('id', $data['deleted_photo_ids'])->get();
+            foreach ($photosToDelete as $photo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($photo->photo_path);
+                $photo->delete();
+            }
+        }
+
+        if (isset($data['photos']) && is_array($data['photos'])) {
+            foreach ($data['photos'] as $photo) {
+                $path = $photo->store('branches/photos', 'public');
+                $branch->photos()->create(['photo_path' => $path]);
+            }
+        }
     }
 
     /**
@@ -49,6 +82,9 @@ class BranchService
      */
     public function destroy(Branch $branch): void
     {
+        foreach ($branch->photos as $photo) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($photo->photo_path);
+        }
         $branch->delete();
     }
 }

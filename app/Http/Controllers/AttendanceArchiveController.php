@@ -10,6 +10,12 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PatientAttendanceExport;
+use App\Exports\TherapistAttendanceExport;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Illuminate\Http\Response as HttpResponse;
 
 class AttendanceArchiveController extends Controller
 {
@@ -49,19 +55,39 @@ class AttendanceArchiveController extends Controller
         $availableTherapists = [];
         $allTherapists = [];
 
+        $search = $request->input('search');
+
+        if ($search || ($branchId && $date)) {
+            $patientQuery = PatientAttendance::with(['patient', 'therapists', 'branch']);
+            $therapistQuery = TherapistAttendance::with(['therapist', 'branch']);
+
+            if ($branchId) {
+                $patientQuery->where('branch_id', $branchId);
+                $therapistQuery->where('branch_id', $branchId);
+            }
+
+            if ($date) {
+                $patientQuery->whereDate('check_in', $date);
+                $therapistQuery->whereDate('check_in', $date);
+            }
+
+            if ($search) {
+                $patientQuery->whereHas('patient', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%");
+                });
+
+                $therapistQuery->whereHas('therapist', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%");
+                });
+            }
+
+            $patientAttendances = $patientQuery->orderBy('check_in', 'desc')->get();
+            $therapistAttendances = $therapistQuery->orderBy('check_in', 'desc')->get();
+        }
+
         if ($branchId && $date) {
-            $patientAttendances = PatientAttendance::with(['patient', 'therapists', 'branch'])
-                ->where('branch_id', $branchId)
-                ->whereDate('check_in', $date)
-                ->orderBy('check_in', 'desc')
-                ->get();
-
-            $therapistAttendances = TherapistAttendance::with(['therapist', 'branch'])
-                ->where('branch_id', $branchId)
-                ->whereDate('check_in', $date)
-                ->orderBy('check_in', 'desc')
-                ->get();
-
             $availablePatients = \App\Models\Patient::whereHas('branches', function ($q) use ($branchId) {
                 $q->where('branches.id', $branchId);
             })->whereDoesntHave('attendances', function ($q) use ($branchId, $date) {
@@ -91,6 +117,7 @@ class AttendanceArchiveController extends Controller
             'availablePatients' => $availablePatients,
             'availableTherapists' => $availableTherapists,
             'allTherapists' => $allTherapists,
+            'search' => $search,
         ]);
     }
 
@@ -146,5 +173,101 @@ class AttendanceArchiveController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Late therapist check-in added successfully.');
+    }
+
+    public function exportPatientExcel(Request $request): BinaryFileResponse
+    {
+        $attendances = $this->getPatientAttendances($request);
+        $date = $request->input('date') ?: 'Semua';
+        return Excel::download(new PatientAttendanceExport($attendances), 'arsip_absensi_pasien_' . $date . '.xlsx');
+    }
+
+    public function exportPatientPdf(Request $request): HttpResponse
+    {
+        $attendances = $this->getPatientAttendances($request);
+        $date = $request->input('date') ?: 'Semua';
+        $pdf = Pdf::loadView('exports.attendance_pdf', compact('attendances', 'date'));
+        $pdf->setPaper('a4', 'landscape');
+        return $pdf->download('arsip_absensi_pasien_' . $date . '.pdf');
+    }
+
+    public function exportTherapistExcel(Request $request): BinaryFileResponse
+    {
+        $attendances = $this->getTherapistAttendances($request);
+        $date = $request->input('date') ?: 'Semua';
+        return Excel::download(new TherapistAttendanceExport($attendances), 'arsip_absensi_terapis_' . $date . '.xlsx');
+    }
+
+    public function exportTherapistPdf(Request $request): HttpResponse
+    {
+        $attendances = $this->getTherapistAttendances($request);
+        $date = $request->input('date') ?: 'Semua';
+        $pdf = Pdf::loadView('exports.therapist_attendance_pdf', compact('attendances', 'date'));
+        $pdf->setPaper('a4', 'landscape');
+        return $pdf->download('arsip_absensi_terapis_' . $date . '.pdf');
+    }
+
+    private function getPatientAttendances(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $branchId = $user->isSuperadmin() ? $request->input('branch_id') : $user->branch_id;
+        $date = $request->input('date');
+        $search = $request->input('search');
+
+        if (!$search && (!$branchId || !$date)) {
+            return collect();
+        }
+
+        $query = PatientAttendance::with(['patient', 'therapists', 'branch']);
+
+        if ($branchId) {
+            $query->where('branch_id', $branchId);
+        }
+
+        if ($date) {
+            $query->whereDate('check_in', $date);
+        }
+
+        if ($search) {
+            $query->whereHas('patient', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        return $query->orderBy('check_in', 'desc')->get();
+    }
+
+    private function getTherapistAttendances(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $branchId = $user->isSuperadmin() ? $request->input('branch_id') : $user->branch_id;
+        $date = $request->input('date');
+        $search = $request->input('search');
+
+        if (!$search && (!$branchId || !$date)) {
+            return collect();
+        }
+
+        $query = TherapistAttendance::with(['therapist', 'branch']);
+
+        if ($branchId) {
+            $query->where('branch_id', $branchId);
+        }
+
+        if ($date) {
+            $query->whereDate('check_in', $date);
+        }
+
+        if ($search) {
+            $query->whereHas('therapist', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        return $query->orderBy('check_in', 'desc')->get();
     }
 }

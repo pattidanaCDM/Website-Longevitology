@@ -39,9 +39,9 @@ export default function ForgotPassword({ status }: { status?: string }) {
                                 >
                                     <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-[#ad2c90] transition-colors" />
                                 </Link>
-                                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Forgot Password?</h2>
+                                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Lupa Password?</h2>
                             </div>
-                            <p className="text-gray-500 dark:text-slate-400">Enter your email and we'll notify the admin to reset your password.</p>
+                            <p className="text-gray-500 dark:text-slate-400">Masukkan Email dan kami akan mengirim email untuk mengubah password</p>
                         </div>
 
                         {status && (
@@ -78,7 +78,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                                     className="w-full py-6 rounded-full bg-gradient-to-r from-[#ad2c90] to-[#5400d4] hover:from-[#7a2ce0] hover:to-[#ad2c90] text-white shadow-lg shadow-purple-500/30 text-base font-bold tracking-wide uppercase transition-all hover:shadow-purple-500/50 hover:-translate-y-0.5"
                                     disabled={processing}
                                 >
-                                    SEND REQUEST
+                                    Kirim Permintaan
                                 </Button>
                             </div>
                         </form>
@@ -88,7 +88,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                 {/* RIGHT SIDE: TEXT CONTENT */}
                 <div className="hidden md:flex w-1/2 p-12 flex-col justify-center items-center text-center text-white relative z-10">
                     <div className="max-w-md">
-                        <h2 className="text-4xl font-bold mb-6">Password Help</h2>
+                        <h2 className="text-4xl font-bold mb-6">Bantuan Password</h2>
                         <p className="text-lg text-white/80 leading-relaxed">
                             Jangan khawatir jika Anda lupa password. Admin kami akan membantu Anda mereset password agar Anda dapat kembali menggunakan layanan Longevitology.
                         </p>

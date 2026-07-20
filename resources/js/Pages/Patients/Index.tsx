@@ -42,6 +42,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
         null,
     );
     const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+    const [attendancePage, setAttendancePage] = useState(1);
 
     const [searchQuery, setSearchQuery] = useState(filters?.search || "");
 
@@ -197,6 +198,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                 route("patients.show", patient.id),
             );
             setSelectedPatient(response.data);
+            setAttendancePage(1);
             setShowViewModal(true);
         } catch (error) {
             console.error("Failed to fetch patient details", error);
@@ -230,18 +232,18 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
         <AuthenticatedLayout
             header={
                 <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                    Manage Patients
+                    Data Pasien
                 </h2>
             }
         >
-            <Head title="Patients" />
+            <Head title="Data Pasien" />
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
                         <div className="flex justify-between items-center mb-6">
                             <div className="flex items-center gap-4">
                                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                                    Patient List
+                                    Data Pasien
                                 </h3>
                                 {isSuperadmin && (
                                     <select
@@ -261,7 +263,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                                     <div className="relative">
                                         <input
                                             type="text"
-                                            placeholder="Search name/phone..."
+                                            placeholder="Cari nama/telepon..."
                                             value={searchQuery}
                                             onChange={(e) => {
                                                 setSearchQuery(e.target.value);
@@ -310,14 +312,14 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                                         variant="outline"
                                         className="flex items-center gap-2 dark:border-slate-800 dark:text-gray-200 dark:hover:bg-slate-800"
                                     >
-                                        <UserCheck className="w-4 h-4" /> Verify / Add Existing
+                                        <UserCheck className="w-4 h-4" /> Verifikasi / Tambah Pasien
                                     </Button>
                                 )}
                                 <Button
                                     onClick={() => setShowAddModal(true)}
                                     className="flex items-center gap-2"
                                 >
-                                    <Plus className="w-4 h-4" /> Add Patient
+                                    <Plus className="w-4 h-4" /> Tambah Pasien
                                 </Button>
                             </div>
                         </div>
@@ -327,22 +329,22 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                                 <thead className="bg-gray-50 dark:bg-slate-800/50">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Photo
+                                            Foto
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Name
+                                            Nama
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Gender
+                                            Jenis Kelamin
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Complaint
+                                            Keluhan
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Branch
+                                            Cabang
                                         </th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Actions
+                                            Aksi
                                         </th>
                                     </tr>
                                 </thead>
@@ -443,7 +445,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Name <span className="text-red-500">*</span>
+                                    Nama <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -464,7 +466,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Gender <span className="text-red-500">*</span>
+                                        Jenis Kelamin <span className="text-red-500">*</span>
                                     </label>
                                     <select
                                         value={data.gender || ""}
@@ -474,9 +476,9 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                                         }}
                                         className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                     >
-                                        <option value="">Select Gender</option> {/* Ini default-nya */}
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
+                                        <option value="">Pilih Jenis Kelamin</option> {/* Ini default-nya */}
+                                        <option value="male">Laki-laki</option>
+                                        <option value="female">Perempuan</option>
                                     </select>
                                     {errors.gender && (
                                         <p className="text-red-500 text-xs mt-1">
@@ -486,7 +488,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Birth Date <span className="text-red-500">*</span>
+                                        Tanggal Lahir <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="date"
@@ -510,7 +512,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Phone <span className="text-red-500">*</span>
+                                    No Telepon <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -530,7 +532,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Address <span className="text-red-500">*</span>
+                                    Alamat <span className="text-red-500">*</span>
                                 </label>
                                 <textarea
                                     value={data.address}
@@ -570,7 +572,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Initial Complaint <span className="text-red-500">*</span>
+                                    Keluhan Utama <span className="text-red-500">*</span>
                                 </label>
                                 <textarea
                                     value={data.initial_complaint}
@@ -592,7 +594,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Photo
+                                    Foto
                                 </label>
                                 <input
                                     type="file"
@@ -655,7 +657,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                                                     }}
                                                 >
                                                     <span className="text-white text-xs font-bold">
-                                                        View
+                                                        Lihat
                                                     </span>
                                                 </button>
                                             </div>
@@ -667,7 +669,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                             {isSuperadmin && (
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Assign to Branch <span className="text-red-500">*</span>
+                                        Ditugaskan ke Cabang <span className="text-red-500">*</span>
                                     </label>
                                     <div className="flex items-center gap-4">
                                         <label className="flex items-center gap-2 text-sm dark:text-gray-300">
@@ -679,7 +681,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                                                     setData("branch_id", []);
                                                 }}
                                             />
-                                            Specific Branches
+                                            Cabang Tertentu
                                         </label>
                                         <label className="flex items-center gap-2 text-sm dark:text-gray-300">
                                             <input
@@ -691,7 +693,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                                                     clearErrors("branch_id");
                                                 }}
                                             />
-                                            All Branches
+                                            Semua Cabang
                                         </label>
                                     </div>
                                     {!assignToAll && (
@@ -737,10 +739,10 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
             )}
             {/* View Modal */}
             {showViewModal && selectedPatient && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 relative">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+                    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-3xl p-6 relative max-h-[90vh] overflow-y-auto">
                         <div
-                            className="absolute top-4 right-4 cursor-pointer"
+                            className="absolute top-4 right-4 cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                             onClick={() => {
                                 setShowViewModal(false);
                                 setSelectedPatient(null);
@@ -748,7 +750,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                         >
                             ✖
                         </div>
-                        <h2 className="text-lg font-bold mb-6 border-b pb-2">
+                        <h2 className="text-lg font-bold mb-6 border-b dark:border-slate-700 pb-2 text-gray-900 dark:text-white">
                             Patient Details
                         </h2>
 
@@ -758,7 +760,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                                     <img
                                         src={`/storage/${selectedPatient.photo}`}
                                         alt={selectedPatient.name}
-                                        className="h-32 w-32 rounded-full object-cover border-4 border-gray-100 shadow-sm cursor-pointer hover:opacity-90"
+                                        className="h-32 w-32 rounded-full object-cover border-4 border-gray-100 dark:border-slate-700 shadow-sm cursor-pointer hover:opacity-90"
                                         onClick={() =>
                                             setSelectedPhoto(
                                                 `/storage/${selectedPatient.photo}`,
@@ -766,14 +768,14 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                                         }
                                     />
                                 ) : (
-                                    <div className="h-32 w-32 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                                    <div className="h-32 w-32 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-gray-400 dark:text-gray-500">
                                         <User className="h-16 w-16" />
                                     </div>
                                 )}
-                                <h3 className="mt-4 text-xl font-semibold text-gray-900 text-center">
+                                <h3 className="mt-4 text-xl font-semibold text-gray-900 dark:text-white text-center">
                                     {selectedPatient.name}
                                 </h3>
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 capitalize mt-2">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400 capitalize mt-2">
                                     {selectedPatient.gender}
                                 </span>
                             </div>
@@ -781,18 +783,18 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                             <div className="col-span-2 space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-xs font-medium text-gray-500 uppercase">
-                                            Phone
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                            No Telepon
                                         </label>
-                                        <p className="mt-1 text-sm text-gray-900">
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-gray-200">
                                             {selectedPatient.phone || "-"}
                                         </p>
                                     </div>
                                     <div>
-                                        <label className="text-xs font-medium text-gray-500 uppercase">
-                                            Birth Date
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                            Tanggal Lahir
                                         </label>
-                                        <p className="mt-1 text-sm text-gray-900">
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-gray-200">
                                             {selectedPatient.birth_date
                                                 ? new Date(
                                                     selectedPatient.birth_date,
@@ -804,49 +806,49 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-xs font-medium text-gray-500 uppercase">
-                                            Address
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                            Alamat
                                         </label>
-                                        <p className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-gray-200 whitespace-pre-wrap">
                                             {selectedPatient.address || "-"}
                                         </p>
                                     </div>
                                     <div>
-                                        <label className="text-xs font-medium text-gray-500 uppercase">
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                             Chakra
                                         </label>
-                                        <p className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-gray-200 whitespace-pre-wrap">
                                             {selectedPatient.cakra || "-"}
                                         </p>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4 bg-yellow-50 p-3 rounded-md">
+                                <div className="grid grid-cols-2 gap-4 bg-yellow-50 dark:bg-yellow-900/10 border dark:border-yellow-900/30 p-3 rounded-md">
                                     <div>
-                                        <label className="text-xs font-medium text-gray-500 uppercase">
-                                            Initial Complaint
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                            Keluhan Utama
                                         </label>
-                                        <p className="mt-1 text-sm text-gray-900">
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-gray-200">
                                             {selectedPatient.initial_complaint ||
                                                 "-"}
                                         </p>
                                     </div>
                                     <div>
-                                        <label className="text-xs font-medium text-gray-500 uppercase">
-                                            Current Complaint
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                            Keluhan Saat Ini
                                         </label>
-                                        <p className="mt-1 text-sm text-gray-900">
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-gray-200">
                                             {selectedPatient.current_complaint ||
                                                 "-"}
                                         </p>
                                     </div>
                                 </div>
 
-                                <div className="border-t pt-4 mt-4">
-                                    <h4 className="font-medium text-gray-900 mb-2">
-                                        Branch Information
+                                <div className="border-t dark:border-slate-700 pt-4 mt-4">
+                                    <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                                        Informasi Cabang
                                     </h4>
-                                    <div className="bg-gray-50 rounded-md p-4 max-h-40 overflow-y-auto">
+                                    <div className="bg-gray-50 dark:bg-slate-700/50 rounded-md p-4 max-h-40 overflow-y-auto">
                                         {selectedPatient.branches &&
                                             selectedPatient.branches.length > 0 ? (
                                             <ul className="space-y-2">
@@ -856,7 +858,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                                                             key={branch.id}
                                                             className="flex justify-between items-center text-sm"
                                                         >
-                                                            <span className="font-medium text-gray-700">
+                                                            <span className="font-medium text-gray-700 dark:text-gray-200">
                                                                 {branch.name}
                                                             </span>
                                                         </li>
@@ -864,101 +866,132 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                                                 )}
                                             </ul>
                                         ) : (
-                                            <p className="text-sm text-gray-500 italic">
-                                                No assigned branches.
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                                                Tidak ada cabang.
                                             </p>
                                         )}
                                     </div>
                                 </div>
 
                                 {/* Attendance History */}
-                                <div className="border-t pt-4 mt-4">
-                                    <h4 className="font-medium text-gray-900 mb-2">
-                                        Attendance History
+                                <div className="border-t dark:border-slate-700 pt-4 mt-4">
+                                    <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                                        Riwayat Kunjungan
                                     </h4>
-                                    <div className="bg-white rounded-md border border-gray-200 shadow-sm max-h-60 overflow-y-auto">
+                                    <div className="bg-white dark:bg-slate-800 rounded-md border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden">
                                         {(selectedPatient as any).attendances &&
                                             (selectedPatient as any).attendances
                                                 .length > 0 ? (
-                                            <table className="min-w-full divide-y divide-gray-200">
-                                                <thead className="bg-gray-50 sticky top-0">
-                                                    <tr>
-                                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                                                            Date
-                                                        </th>
-                                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                                                            Branch
-                                                        </th>
-                                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                                                            Complaint
-                                                        </th>
-                                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                                                            Therapists
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="bg-white divide-y divide-gray-200">
-                                                    {(
-                                                        selectedPatient as any
-                                                    ).attendances.map(
-                                                        (att: any) => (
-                                                            <tr key={att.id}>
-                                                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                                                                    {new Date(
-                                                                        att.check_in,
-                                                                    ).toLocaleDateString()}{" "}
-                                                                    <span className="text-gray-500 text-xs">
-                                                                        (
-                                                                        {new Date(
-                                                                            att.check_in,
-                                                                        ).toLocaleTimeString(
-                                                                            [],
-                                                                            {
-                                                                                hour: "2-digit",
-                                                                                minute: "2-digit",
-                                                                            },
-                                                                        )}
-                                                                        )
-                                                                    </span>
-                                                                </td>
-                                                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                                                                    {
-                                                                        att
-                                                                            .branch
-                                                                            ?.name
-                                                                    }
-                                                                </td>
-                                                                <td
-                                                                    className="px-4 py-2 text-sm text-gray-500 max-w-xs truncate"
-                                                                    title={
-                                                                        att.complaint ||
-                                                                        ""
-                                                                    }
-                                                                >
-                                                                    {att.complaint ||
-                                                                        "-"}
-                                                                </td>
-                                                                <td className="px-4 py-2 text-sm text-gray-500 max-w-xs truncate">
-                                                                    {att.therapists
-                                                                        ?.map(
-                                                                            (
-                                                                                t: any,
-                                                                            ) =>
-                                                                                t.name,
-                                                                        )
-                                                                        .join(
-                                                                            ", ",
-                                                                        ) ||
-                                                                        "-"}
-                                                                </td>
+                                            <>
+                                                <div className="overflow-x-auto max-h-60 overflow-y-auto">
+                                                    <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                                                        <thead className="bg-gray-50 dark:bg-slate-700/50 sticky top-0">
+                                                            <tr>
+                                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                                                    Tanggal
+                                                                </th>
+                                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                                                    Cabang
+                                                                </th>
+                                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                                                    Keluhan
+                                                                </th>
+                                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                                                    Terapis
+                                                                </th>
                                                             </tr>
-                                                        ),
-                                                    )}
-                                                </tbody>
-                                            </table>
+                                                        </thead>
+                                                        <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
+                                                            {(
+                                                                selectedPatient as any
+                                                            ).attendances.slice((attendancePage - 1) * 5, attendancePage * 5).map(
+                                                                (att: any) => (
+                                                                    <tr key={att.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50">
+                                                                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                                                                            {new Date(
+                                                                                att.check_in,
+                                                                            ).toLocaleDateString()}{" "}
+                                                                            <span className="text-gray-500 dark:text-gray-400 text-xs">
+                                                                                (
+                                                                                {new Date(
+                                                                                    att.check_in,
+                                                                                ).toLocaleTimeString(
+                                                                                    [],
+                                                                                    {
+                                                                                        hour: "2-digit",
+                                                                                        minute: "2-digit",
+                                                                                    },
+                                                                                )}
+                                                                                )
+                                                                            </span>
+                                                                        </td>
+                                                                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                                            {
+                                                                                att
+                                                                                    .branch
+                                                                                    ?.name
+                                                                            }
+                                                                        </td>
+                                                                        <td
+                                                                            className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate"
+                                                                            title={
+                                                                                att.complaint ||
+                                                                                ""
+                                                                            }
+                                                                        >
+                                                                            {att.complaint ||
+                                                                                "-"}
+                                                                        </td>
+                                                                        <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">
+                                                                            {att.therapists
+                                                                                ?.map(
+                                                                                    (
+                                                                                        t: any,
+                                                                                    ) =>
+                                                                                        t.name,
+                                                                                )
+                                                                                .join(
+                                                                                    ", ",
+                                                                                ) ||
+                                                                                "-"}
+                                                                        </td>
+                                                                    </tr>
+                                                                ),
+                                                            )}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                {((selectedPatient as any).attendances.length > 5) && (
+                                                    <div className="flex justify-between items-center p-3 border-t dark:border-slate-700 bg-gray-50 dark:bg-slate-800/80">
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                            Halaman {attendancePage} dari {Math.ceil((selectedPatient as any).attendances.length / 5)}
+                                                        </span>
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => setAttendancePage(p => Math.max(1, p - 1))}
+                                                                disabled={attendancePage === 1}
+                                                                className="h-7 text-xs"
+                                                            >
+                                                                Sebelumnya
+                                                            </Button>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => setAttendancePage(p => Math.min(Math.ceil((selectedPatient as any).attendances.length / 5), p + 1))}
+                                                                disabled={attendancePage === Math.ceil((selectedPatient as any).attendances.length / 5)}
+                                                                className="h-7 text-xs"
+                                                            >
+                                                                Selanjutnya
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </>
                                         ) : (
-                                            <p className="p-4 text-sm text-gray-500 italic text-center">
-                                                No attendance records found.
+                                            <p className="p-4 text-sm text-gray-500 dark:text-gray-400 italic text-center">
+                                                Tidak ada catatan kunjungan.
                                             </p>
                                         )}
                                     </div>
@@ -968,7 +1001,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
 
                         <div className="mt-8 flex justify-end">
                             <Button onClick={() => setShowViewModal(false)} className="dark:bg-slate-700 dark:text-gray-200 dark:hover:bg-slate-600">
-                                Close
+                                Tutup
                             </Button>
                         </div>
                     </div>
@@ -990,13 +1023,13 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                             ✖
                         </div>
                         <h2 className="text-lg font-bold mb-4">
-                            Verify / Add Existing Patient
+                            Verifikasi / Tambah Pasien Lama
                         </h2>
 
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Search by Phone
+                                    Cari Berdasarkan No Telepon
                                 </label>
                                 <div className="flex gap-2 mt-1">
                                     <input
@@ -1052,18 +1085,23 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                                             {verifiedPatient.phone}
                                         </p>
                                         <div className="text-xs text-gray-400 mt-1">
-                                            Found in{" "}
+                                            Ditemukan di{" "}
                                             {verifiedPatient.branches?.length ||
                                                 0}{" "}
-                                            branches
+                                            Cabang
                                         </div>
+                                        {(verifiedPatient as any).attendances && (verifiedPatient as any).attendances.length > 0 && (
+                                            <div className="text-xs text-gray-500 mt-1">
+                                                Terakhir hadir: {new Date((verifiedPatient as any).attendances[0].check_in).toLocaleDateString('id-ID')} di {(verifiedPatient as any).attendances[0].branch?.name || "-"}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}
 
                             {isAlreadyInBranch && (
                                 <p className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 rounded-md">
-                                    This patient is already registered in the selected branch.
+                                    Pasien ini sudah terdaftar di cabang yang dipilih.
                                 </p>
                             )}
 
@@ -1078,10 +1116,10 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                                         }}
                                         className="dark:bg-slate-700 dark:text-gray-200 dark:hover:bg-slate-600"
                                     >
-                                        Cancel
+                                        Batal
                                     </Button>
                                     <Button onClick={extendPatient} disabled={isAlreadyInBranch} className="dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-700">
-                                        Add to My Branch
+                                        Tambah ke Cabang Saya
                                     </Button>
                                 </div>
                             )}
@@ -1105,7 +1143,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                             className="absolute top-[-40px] right-0 text-white hover:text-gray-300 text-xl font-bold p-2"
                             onClick={() => setSelectedPhoto(null)}
                         >
-                            Close
+                            Tutup
                         </button>
                     </div>
                 </div>
@@ -1115,13 +1153,13 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
                     <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl w-full max-w-sm p-6 relative text-gray-900 dark:text-gray-100">
                         <h2 className="text-lg font-bold mb-4 text-red-600 dark:text-red-400">
-                            Delete Patient
+                            Hapus Pasien
                         </h2>
 
                         {isSuperadmin ? (
                             <div className="space-y-4">
                                 <p>
-                                    How do you want to delete{" "}
+                                    Bagaimana Anda ingin menghapus{" "}
                                     <strong>{patientToDelete.name}</strong>?
                                 </p>
 
@@ -1141,7 +1179,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                                                 }))
                                             }
                                         />
-                                        Remove from a Branch
+                                        Hapus dari Cabang
                                     </label>
 
                                     {deleteDetails.type === "branch" && (
@@ -1156,7 +1194,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                                             }
                                         >
                                             <option value="">
-                                                Select Branch
+                                                Pilih Cabang
                                             </option>
                                             {patientToDelete.branches?.map(
                                                 (branch) => (
@@ -1187,15 +1225,15 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                                                 }))
                                             }
                                         />
-                                        Delete Globally (All Branches)
+                                        Hapus Global (Semua Cabang)
                                     </label>
                                 </div>
                             </div>
                         ) : (
                             <p>
-                                Are you sure you want to remove{" "}
-                                <strong>{patientToDelete.name}</strong> from
-                                your branch? This action cannot be undone.
+                                Apakah Anda yakin ingin menghapus{" "}
+                                <strong>{patientToDelete.name}</strong> dari
+                                cabang Anda? Tindakan ini tidak dapat dibatalkan.
                             </p>
                         )}
 
@@ -1205,7 +1243,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                                 onClick={() => setShowDeleteModal(false)}
                                 className="dark:bg-slate-700 dark:text-gray-200 dark:hover:bg-slate-600"
                             >
-                                Cancel
+                                Batal
                             </Button>
                             <Button
                                 onClick={() => handleDelete()}
@@ -1216,7 +1254,7 @@ export default function PatientIndex({ patients, branches, filters }: Props) {
                                     !deleteDetails.branch_id
                                 }
                             >
-                                Confirm Delete
+                                Konfirmasi Hapus
                             </Button>
                         </div>
                     </div>

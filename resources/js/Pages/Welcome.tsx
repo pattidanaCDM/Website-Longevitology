@@ -1,24 +1,41 @@
 import { Link, router } from "@inertiajs/react";
 import GuestLayout from "@/Layouts/GuestLayout";
 import { Button } from "@/Components/ui/button";
-import { MapPin, Calendar, Clock } from "lucide-react";
+import { MapPin, Calendar, Clock, Phone, ExternalLink, ChevronDown, Target, Lightbulb, History, AlertCircle, Megaphone } from "lucide-react";
 import { useState, useCallback } from "react";
 import { LogIn } from "lucide-react";
 
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import DarkModeToggle from "@/Components/DarkModeToggle";
+import Modal from "@/Components/Modal";
+import { Branch } from "@/types";
 
-export default function Welcome({ branches, filters, allBranches, slideshowImages = [] }: any) {
+export default function Welcome({ branches, filters, allBranches, slideshowImages = [], faqs = [], faqCategories = [] }: any) {
     const [values, setValues] = useState({
         branch_id: filters.branch_id || "",
         day: filters.day || "",
     });
+
+    const [selectedDetailBranch, setSelectedDetailBranch] = useState<Branch | null>(null);
+    const [showDetailModal, setShowDetailModal] = useState(false);
+
+    const [activeFaqCategory, setActiveFaqCategory] = useState<number | null>(faqCategories?.length > 0 ? faqCategories[0].id : null);
+    const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+
+    const filteredFaqs = activeFaqCategory === null
+        ? []
+        : faqs.filter((faq: any) => faq.categories.some((c: any) => c.id === activeFaqCategory));
 
     const handleChange = useCallback((field: string, value: string) => {
         const newValues = { ...values, [field]: value };
         setValues(newValues);
         router.get('/', newValues, { preserveState: true, preserveScroll: true });
     }, [values]);
+
+    const openDetailModal = (branch: Branch) => {
+        setSelectedDetailBranch(branch);
+        setShowDetailModal(true);
+    };
 
     const days = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
 
@@ -35,29 +52,17 @@ export default function Welcome({ branches, filters, allBranches, slideshowImage
                                 Longevitology
                             </p>
                         </Link>
+                        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600 dark:text-gray-300">
+                            <a href="#home" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Home</a>
+                            <a href="#classes" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Kelas</a>
+                            <a href="#branches" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Cabang</a>
+                            <a href="#testimonials" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Testimoni</a>
+                            <a href="#faq" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">FAQ</a>
+                            <a href="#about" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Tentang</a>
+                            <a href="#contact" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Hubungi Kami</a>
+                        </nav>
                         <div className="flex items-center gap-4">
                             <DarkModeToggle />
-                            <Link href="/login">
-                                <Button
-                                    className="
-                                    bg-[#ad2c90]
-                                    hover:bg-[#9c2782]
-                                    text-white
-                                    rounded-lg
-                                    px-6
-                                    font-medium
-                                    flex items-center gap-2
-                                    transition-all
-                                    duration-200
-                                    ease-out
-                                    hover:-translate-y-0.5
-                                    hover:shadow-lg
-                                "
-                                >
-                                    <LogIn className="w-4 h-4" />
-                                    Login
-                                </Button>
-                            </Link>
                         </div>
                     </div>
                 </header>
@@ -65,7 +70,7 @@ export default function Welcome({ branches, filters, allBranches, slideshowImage
         >
             <div className="flex flex-col min-h-screen">
                 {/* Hero Section */}
-                <section className="flex flex-col items-center justify-center text-center py-20 px-6 bg-slate-50 dark:bg-slate-900/50">
+                <section id="home" className="flex flex-col items-center justify-center text-center py-20 px-6 bg-slate-50 dark:bg-slate-900/50">
                     <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight text-[#ad2c90]">
                         Longevitology
                     </h1>
@@ -75,8 +80,54 @@ export default function Welcome({ branches, filters, allBranches, slideshowImage
                     </p>
                 </section>
 
+                {/* Classes Section */}
+                <section id="classes" className="py-20 px-6 bg-white dark:bg-slate-950 transition-colors duration-300">
+                    <div className="max-w-6xl mx-auto text-center">
+                        <h2 className="text-3xl font-bold mb-4 text-[#ad2c90]">Kelas Terapi</h2>
+                        <p className="text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">
+                            Tingkatkan energi dan keseimbangan tubuh Anda melalui kelas Longevitology yang dipandu oleh praktisi berpengalaman.
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-8 border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all">
+                                <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">Kelas Dasar</h3>
+                                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                                    Pada kelas Pemula, cakra peserta akan dibuka sebesar 30%. 
+                                    Materi mengenai teori, teknik, dan etika Longevitology akan diajarkan, termasuk teknik meditasi kesadaran penuh (*mindfulness*). 
+                                </p>
+                                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">    
+                                    Setelah mengikuti kelas ini, peserta dapat melakukan penyesuaian diri.
+                                    Setiap sesi kelas pemula berlangsung selama 10–12 jam dan diadakan pada malam hari serta akhir pekan dalam kurun waktu tiga hari. Meskipun tidak dipungut biaya untuk mengikuti kelas ini, pendaftaran awal tetap diperlukan dengan sistem siapa cepat dia dapat
+                                </p>
+                            </div>
+                            <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-8 border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all transform md:-translate-y-4">
+                                <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">Kelas Menengah</h3>
+                                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                                    Dalam kelas tingkat menengah (Intermediate), cakra peserta akan dibuka kembali dan tingkat energi mereka akan meningkat sebesar 30%. 
+                                    Peserta akan mempelajari cara menggunakan berbagai posisi tangan untuk melakukan penyesuaian khusus guna mengatasi beragam penyakit dan masalah kesehatan.
+                                    Setelah mengikuti kelas ini, peserta dapat mulai melakukan penyesuaian terhadap orang lain.
+                                </p>
+                                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">    
+                                    Setiap sesi tingkat menengah berlangsung selama 10–12 jam dan diadakan pada malam hari serta akhir pekan dalam kurun waktu tiga hari. 
+                                    Meskipun kelas ini tidak dipungut biaya, pendaftaran awal wajib dilakukan dengan sistem siapa cepat dia dapat.
+                                </p>
+                            </div>
+                            <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-8 border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all">
+                                <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">Kelas Lanjutan</h3>
+                                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                                    Dalam kelas tingkat lanjut, cakra para peserta akan terbuka sepenuhnya dan tingkat energi mereka akan meningkat. 
+                                    Peserta akan mempelajari teknik penyembuhan tingkat lanjut, seperti cara melakukan penyembuhan jarak jauh melalui telepon serta penyesuaian energi untuk penyakit serius.
+                                </p>
+                                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">    
+                                    Kelas ini berdurasi 15–18 jam dan diselenggarakan pada malam hari serta akhir pekan dalam kurun waktu lima hari. 
+                                    Calon peserta kelas tingkat lanjut harus telah menyelesaikan kelas tingkat menengah lebih dari dua bulan sebelumnya, memenuhi jumlah jam penyesuaian tertentu, serta menulis esai mengenai kesan dan pengalaman mereka selama mengikuti Longevitology.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 {/* Cabang & Jadwal Section */}
-                <section className="py-16 px-6 bg-white dark:bg-slate-950 transition-colors duration-300">
+                <section id="branches" className="py-16 px-6 bg-slate-50 dark:bg-slate-900/50 transition-colors duration-300">
                     <div className="max-w-6xl mx-auto">
                         <h2 className="text-3xl font-bold text-center mb-8 text-[#ad2c90]">
                             Cabang & Jadwal Terapi
@@ -116,59 +167,78 @@ export default function Welcome({ branches, filters, allBranches, slideshowImage
                                 branches.map((branch: any, index: number) => (
                                     <div
                                         key={index}
-                                        className="bg-card dark:bg-slate-900 p-6 rounded-xl border dark:border-slate-800 shadow-sm hover:shadow-md transition-all hover:-translate-y-1"
+                                        className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-[2rem] border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full"
                                     >
-                                        <h3 className="text-xl font-semibold mb-4 text-card-foreground dark:text-white">
-                                            {branch.name}
-                                        </h3>
-
-                                        <div className="space-y-3 text-muted-foreground dark:text-slate-400">
-                                            <div className="flex items-start gap-3">
-                                                <MapPin className="w-5 h-5 mt-0.5 text-primary shrink-0" />
-                                                <span className="text-sm">{branch.address}</span>
-                                            </div>
-
-                                            <div className="flex items-start gap-3">
-                                                <Calendar className="w-5 h-5 mt-0.5 text-primary shrink-0" />
-                                                <span className="text-sm">{branch.schedule}</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-6 pt-4 border-t dark:border-slate-800">
-                                            {branch.map_url ? (
-                                                <a
-                                                    href={branch.map_url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="
-                                                        w-full
-                                                        text-primary
-                                                        flex items-center justify-center
-                                                        transition-all
-                                                        duration-200
-                                                        ease-out
-                                                        hover:-translate-y-0.5
-                                                        hover:shadow-lg
-                                                        py-2 px-4 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800
-                                                        font-medium text-sm
-                                                    "
-                                                >
-                                                    Lihat Peta
-                                                    <MapPin className="ml-2 w-4 h-4" />
-                                                </a>
+                                        {/* Image Section */}
+                                        <div className="relative h-56 w-full overflow-hidden bg-gray-100 dark:bg-slate-800">
+                                            {branch.photos && branch.photos.length > 0 ? (
+                                                <img
+                                                    src={`/storage/${branch.photos[0].photo_path}`}
+                                                    alt={branch.name}
+                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                />
                                             ) : (
-                                                <Button
-                                                    disabled
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="w-full text-slate-400 cursor-not-allowed"
-                                                >
-                                                    Peta Tidak Tersedia
-                                                    <MapPin className="ml-2 w-4 h-4" />
-                                                </Button>
+                                                <div className="w-full h-full bg-gradient-to-br from-[#ad2c90]/10 to-purple-500/10 flex items-center justify-center transition-transform duration-700 group-hover:scale-110">
+                                                    <MapPin className="w-12 h-12 text-[#ad2c90]/30" />
+                                                </div>
                                             )}
+
+                                            <div className="absolute top-4 left-4 flex gap-2 flex-col items-start">
+                                                <span className="px-3 py-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm text-[#ad2c90] dark:text-[#d35fb9] text-xs font-bold rounded-full uppercase tracking-wide shadow-sm">
+                                                    Cabang
+                                                </span>
+                                                {branch.schedule_exceptions && branch.schedule_exceptions.length > 0 && (
+                                                    <span className="px-3 py-1 bg-red-600/90 dark:bg-red-500/90 backdrop-blur-sm text-white text-xs font-bold rounded-full uppercase tracking-wide shadow-sm flex items-center gap-1">
+                                                        <AlertCircle className="w-3 h-3" />
+                                                        Pemberitahuan Jadwal
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
 
+                                        {/* Content Section */}
+                                        <div className="p-6 flex flex-col flex-grow">
+                                            <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white line-clamp-1">
+                                                {branch.name}
+                                            </h3>
+
+                                            <div className="space-y-3 text-gray-600 dark:text-slate-400 flex-grow text-sm">
+                                                <div className="flex items-start gap-3">
+                                                    <MapPin className="w-5 h-5 mt-0.5 text-[#ad2c90] shrink-0" />
+                                                    <span className="line-clamp-2">{branch.address}</span>
+                                                </div>
+
+                                                <div className="flex items-start gap-3">
+                                                    <Calendar className="w-5 h-5 mt-0.5 text-[#ad2c90] shrink-0" />
+                                                    <span className="line-clamp-2 leading-relaxed">{branch.schedule}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-6 pt-2 relative">
+                                                {branch.schedule_exceptions && branch.schedule_exceptions.length > 0 && (
+                                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                                                        <span className="flex h-3 w-3">
+                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                <Button
+                                                    onClick={() => openDetailModal(branch)}
+                                                    className={`w-full rounded-full text-white font-semibold py-6 text-base shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ${
+                                                        (branch.schedule_exceptions && branch.schedule_exceptions.length > 0) && (branch.active_announcements && branch.active_announcements.length > 0)
+                                                            ? 'bg-gradient-to-r from-red-600 to-blue-600 hover:from-red-700 hover:to-blue-700'
+                                                            : (branch.schedule_exceptions && branch.schedule_exceptions.length > 0)
+                                                                ? 'bg-red-600 hover:bg-red-700'
+                                                                : (branch.active_announcements && branch.active_announcements.length > 0)
+                                                                    ? 'bg-blue-600 hover:bg-blue-700'
+                                                                    : 'bg-[#ad2c90] hover:bg-[#8a2373]'
+                                                    }`}
+                                                >
+                                                    Lihat Detail
+                                                </Button>
+                                            </div>
+                                        </div>
                                     </div>
                                 ))
                             ) : (
@@ -179,7 +249,490 @@ export default function Welcome({ branches, filters, allBranches, slideshowImage
                         </div>
                     </div>
                 </section>
+                {/* Testimonials Section */}
+                <section id="testimonials" className="py-20 px-6 bg-white dark:bg-slate-950 transition-colors duration-300">
+                    <div className="max-w-6xl mx-auto text-center">
+                        <h2 className="text-3xl font-bold mb-12 text-[#ad2c90]">Testimoni</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 item-stretch">
+                            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 text-left flex flex-col h-full">
+                                <p className="text-gray-600 dark:text-gray-300 italic mb-6">"...I passed a stone of 0.9cm in diameter with sharp edges..."</p>
+                                <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-4">- Dr. Chen, MD - Taiwan</h4>
+                                <Link
+                                    href='/testimonials#kidney-stones'
+                                    className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition mt-4 text-sm w-fit mt-auto"
+                                >
+                                    Baca Selengkapnya
+                                </Link>
+                            </div>
+                            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 text-left flex flex-col h-full">
+                                <p className="text-gray-600 dark:text-gray-300 italic mb-6">"...CT scan verified that all my liver cysts had disappeared..."</p>
+                                <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-4">Szusin Chen - USA</h4>
+                                <Link
+                                    href='/testimonials#liver-cysts'
+                                    className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition mt-4 text-sm w-fit mt-auto"
+                                >
+                                    Baca Selengkapnya
+                                </Link>
+                            </div>
+                            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 text-left flex flex-col h-full">
+                                <p className="text-gray-600 dark:text-gray-300 italic mb-6 text-sm flex-grow">"...Longevitology is like a doctor with you at all times..."</p>
+                                <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-4">Mr. Ku - Germany</h4>
+                                <Link
+                                    href='/testimonials#own-physician'
+                                    className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition mt-4 text-sm w-fit mt-auto"
+                                >
+                                    Baca Selengkapnya
+                                </Link>
+                            </div>
+                            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 text-left flex flex-col h-full">
+                                <p className="text-gray-600 dark:text-gray-300 italic mb-6 text-sm flex-grow">"...my headache was taken care of without medication..."</p>
+                                <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-4">Ms. Gu, retired prof - Taiwan</h4>
+                                <Link
+                                    href='/testimonials#headache'
+                                    className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition mt-4 text-sm w-fit mt-auto"
+                                >
+                                    Baca Selengkapnya
+                                </Link>
+                            </div>
+                            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 text-left flex flex-col h-full">
+                                <p className="text-gray-600 dark:text-gray-300 italic mb-6 text-sm flex-grow">"...He did not even sneeze once when pollen swept through England in May..."</p>
+                                <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-4">Mrs. Chen - England</h4>
+                                <Link
+                                    href='/testimonials#allergies'
+                                    className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition mt-4 text-sm w-fit mt-auto"
+                                >
+                                    Baca Selengkapnya
+                                </Link>
+                            </div>
+                            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 text-left flex flex-col h-full">
+                                <p className="text-gray-600 dark:text-gray-300 italic mb-6 text-sm flex-grow">"...introduced to Longetivology in 2001...many people have benefited from adjustments..."</p>
+                                <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-4">Russ Gothrick - USA</h4>
+                                <Link
+                                    href='/testimonials#empower'
+                                    className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition mt-4 text-sm w-fit mt-auto"
+                                >
+                                    Baca Selengkapnya
+                                </Link>
+                            </div>
+                            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 text-left flex flex-col h-full">
+                                <p className="text-gray-600 dark:text-gray-300 italic mb-6 text-sm flex-grow">"...I got a stroke. My colleague adjusted me...When I got up the next morning, I could move freely..."</p>
+                                <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-4">Tien Fa Tzai - China</h4>
+                                <Link
+                                    href='/testimonials#stroke'
+                                    className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition mt-4 text-sm w-fit mt-auto"
+                                >
+                                    Baca Selengkapnya
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* FAQ Section */}
+                <section id="faq" className="py-20 px-6 bg-white dark:bg-slate-900 transition-colors duration-300 border-t border-gray-100 dark:border-slate-800">
+                    <div className="max-w-4xl mx-auto">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl font-bold mb-4 text-[#ad2c90]">Frequently Asked Questions</h2>
+                            <p className="text-gray-600 dark:text-gray-400">Temukan jawaban untuk pertanyaan yang sering diajukan seputar Longevitology.</p>
+                        </div>
+
+                        {/* Category Filters */}
+                        <div className="flex flex-wrap justify-center gap-3 mb-10">
+                            {faqCategories.map((category: any) => (
+                                <button
+                                    key={category.id}
+                                    onClick={() => setActiveFaqCategory(category.id)}
+                                    className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${activeFaqCategory === category.id
+                                        ? 'bg-[#ad2c90] text-white shadow-md'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-300 dark:hover:bg-slate-700'
+                                        }`}
+                                >
+                                    {category.name}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* FAQ Accordion */}
+                        <div className="space-y-4">
+                            {filteredFaqs.length === 0 ? (
+                                <p className="text-center text-gray-500 dark:text-gray-400 py-8">Belum ada FAQ untuk kategori ini.</p>
+                            ) : (
+                                filteredFaqs.map((faq: any) => (
+                                    <div
+                                        key={faq.id}
+                                        className="border border-gray-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-white dark:bg-slate-800/50 transition-all duration-200"
+                                    >
+                                        <button
+                                            onClick={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)}
+                                            className="w-full flex items-center justify-between p-5 text-left focus:outline-none"
+                                        >
+                                            <span className="font-semibold text-gray-900 dark:text-gray-100 pr-8">{faq.question}</span>
+                                            <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform duration-300 flex-shrink-0 ${expandedFaq === faq.id ? 'rotate-180' : ''}`} />
+                                        </button>
+                                        <div
+                                            className={`transition-all duration-300 ease-in-out ${expandedFaq === faq.id ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
+                                        >
+                                            <div className="p-5 pt-0 text-gray-600 dark:text-gray-400 whitespace-pre-wrap leading-relaxed border-t border-gray-100 dark:border-slate-700/50 mt-2">
+                                                {faq.answer}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </section>
+
+                {/* About Section */}
+                <section id="about" className="py-20 px-6 bg-white dark:bg-slate-950 transition-colors duration-300">
+                    <div className="max-w-6xl mx-auto text-center">
+                        <h2 className="text-3xl font-bold mb-12 text-[#ad2c90]">Tentang Longevitology</h2>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                            {/* Misi */}
+                            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col items-center">
+                                <div className="p-4 bg-[#ad2c90]/10 dark:bg-[#ad2c90]/20 rounded-full mb-6">
+                                    <Target className="w-8 h-8 text-[#ad2c90] dark:text-[#d35fb9]" />
+                                </div>
+                                <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Misi</h3>
+                                <blockquote className="italic border-l-4 border-[#ad2c90] pl-4 text-gray-700 dark:text-gray-200 font-medium mb-6 w-full text-center">
+                                    "Menyelamatkan nyawa dengan penuh kasih."
+                                </blockquote>
+                                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6 flex-grow">
+                                    Melatih para relawan untuk mengulurkan tangan penuh kasih guna membantu sesama yang sedang sakit, menderita, atau dalam kesulitan melalui penyelarasan energi Longevitology.
+                                </p>
+                            </div>
+
+                            {/* Praktis */}
+                            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col items-center transform md:-translate-y-4">
+                                <div className="p-4 bg-orange-500/10 dark:bg-orange-500/20 rounded-full mb-6">
+                                    <Lightbulb className="w-8 h-8 text-orange-600 dark:text-orange-400" />
+                                </div>
+                                <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Praktis</h3>
+                                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6 flex-grow">
+                                    Saat cakra kita terbuka, tangan kita dapat digunakan untuk menyalurkan energi semesta ke dalam tubuh kita sendiri maupun tubuh orang lain. Dengan memulihkan keseimbangan energi di dalam tubuh, Longevitology meningkatkan kemampuan tubuh untuk menyembuhkan dirinya sendiri.
+                                </p>
+                            </div>
+
+                            {/* Histori */}
+                            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col items-center">
+                                <div className="p-4 bg-blue-500/10 dark:bg-blue-500/20 rounded-full mb-6">
+                                    <History className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Histori</h3>
+                                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6 flex-grow">
+                                    Longevitology bukanlah sebuah bisnis dan tidak memiliki afiliasi dengan kelompok keagamaan, medis, politik, maupun kelompok lainnya di dunia. Para pendiri bersamanya, yaitu Guru Lin dan Guru Wei, telah mengajarkan praktik ini di seluruh dunia sejak tahun 1993.
+                                </p>
+                            </div>
+                        </div>
+
+                        <Link
+                            href={route('about')}
+                            className="inline-flex items-center justify-center px-8 py-3 bg-[#ad2c90] hover:bg-[#8a2373] text-white font-semibold rounded-full shadow-md hover:-translate-y-0.5 transition-all"
+                        >
+                            Baca Selengkapnya
+                        </Link>
+                    </div>
+                </section>
+
+                {/* Contact Section */}
+                <section id="contact" className="py-20 px-6 bg-slate-50 dark:bg-slate-900/50 transition-colors duration-300">
+                    <div className="max-w-3xl mx-auto">
+                        <h2 className="text-3xl font-bold mb-4 text-center text-[#ad2c90]">Hubungi Kami</h2>
+                        <p className="text-center text-gray-600 dark:text-gray-400 mb-10">Punya pertanyaan? Kirimkan pesan melalui form di bawah ini.</p>
+
+                        <form action="https://api.web3forms.com/submit" method="POST" className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] shadow-sm border border-gray-100 dark:border-slate-800 space-y-6">
+                            {/* Replace with actual Access Key from Web3Forms */}
+                            <input type="hidden" name="access_key" value="YOUR_ACCESS_KEY_HERE" />
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nama Lengkap</label>
+                                    <input type="text" name="name" required className="w-full rounded-xl border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-[#ad2c90] focus:border-[#ad2c90]" placeholder="Nama Anda" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
+                                    <input type="email" name="email" required className="w-full rounded-xl border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-[#ad2c90] focus:border-[#ad2c90]" placeholder="nama@email.com" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Provinsi</label>
+                                <select name="province" required className="w-full rounded-xl border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-[#ad2c90] focus:border-[#ad2c90]">
+                                    <option value="">Pilih Provinsi</option>
+                                    <option value="DKI Jakarta">DKI Jakarta</option>
+                                    <option value="Jawa Barat">Jawa Barat</option>
+                                    <option value="Jawa Tengah">Jawa Tengah</option>
+                                    <option value="Jawa Timur">Jawa Timur</option>
+                                    <option value="Banten">Banten</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Judul</label>
+                                <input type="text" name="subject" required className="w-full rounded-xl border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-[#ad2c90] focus:border-[#ad2c90]" placeholder="Judul Pesan" />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pesan (Komentar)</label>
+                                <textarea name="message" rows={4} required className="w-full rounded-xl border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-[#ad2c90] focus:border-[#ad2c90]" placeholder="Tuliskan pesan Anda di sini..."></textarea>
+                            </div>
+
+                            <input type="hidden" name="redirect" value="https://web3forms.com/success" />
+
+                            <div className="pt-2">
+                                <Button type="submit" className="w-full rounded-xl bg-[#ad2c90] hover:bg-[#8a2373] text-white font-semibold py-4 text-base shadow-md hover:-translate-y-0.5 transition-all">
+                                    Kirim Pesan
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
             </div>
+
+            {/* Detail Branch Modal */}
+            <Modal show={showDetailModal} onClose={() => setShowDetailModal(false)} maxWidth="5xl">
+                {selectedDetailBranch && (
+                    <div className="relative bg-white dark:bg-slate-900 overflow-y-auto max-h-[90vh]">
+                        {/* Close Button Floating */}
+                        <button
+                            onClick={() => setShowDetailModal(false)}
+                            className="absolute top-4 right-4 z-20 p-2.5 bg-black/40 hover:bg-black/60 backdrop-blur-md text-white rounded-full transition-all"
+                        >
+                            <span className="sr-only">Tutup</span>
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
+                        {/* Hero Image Header */}
+                        <div className="relative h-64 sm:h-80 w-full bg-gray-200 dark:bg-slate-800">
+                            {selectedDetailBranch.photos && selectedDetailBranch.photos.length > 0 ? (
+                                <img
+                                    src={`/storage/${selectedDetailBranch.photos[0].photo_path}`}
+                                    alt={selectedDetailBranch.name}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-[#ad2c90]/20 to-purple-500/20 flex items-center justify-center">
+                                    <MapPin className="w-16 h-16 text-[#ad2c90]/40" />
+                                </div>
+                            )}
+                            {/* Gradient Overlay for Title */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+
+                            {/* Title */}
+                            <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
+                                <span className="px-3 py-1 bg-[#ad2c90] text-white text-xs font-bold rounded-full uppercase tracking-wide shadow-sm mb-3 inline-block">
+                                    Detail Cabang
+                                </span>
+                                <h2 className="text-3xl sm:text-4xl font-bold text-white shadow-sm drop-shadow-md">
+                                    {selectedDetailBranch.name}
+                                </h2>
+                            </div>
+                        </div>
+
+                        {/* Content Area */}
+                        <div className="p-6 sm:p-8 space-y-8">
+                            {/* Announcements Full Row */}
+                            {selectedDetailBranch.active_announcements && selectedDetailBranch.active_announcements.length > 0 && (
+                                <div className="space-y-4">
+                                    {selectedDetailBranch.active_announcements.map((announcement: any) => (
+                                        <div key={announcement.id} className="p-4 rounded-xl border bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800/50 shadow-sm">
+                                            <div className="flex items-start gap-3">
+                                                <div className="p-2 bg-blue-100 dark:bg-blue-800/50 rounded-lg shrink-0 mt-0.5">
+                                                    <Megaphone className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-sm text-blue-900 dark:text-blue-300 flex items-center gap-2">
+                                                        {announcement.title}
+                                                        <span className="px-2 py-0.5 bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 text-[10px] rounded-full uppercase font-bold tracking-wider">
+                                                            Pengumuman
+                                                        </span>
+                                                    </h4>
+                                                    <p className="text-sm mt-2 text-blue-800 dark:text-blue-200 whitespace-pre-wrap leading-relaxed">
+                                                        {announcement.content}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div className={`grid grid-cols-1 ${(selectedDetailBranch.embed_map_url || selectedDetailBranch.map_url) ? 'lg:grid-cols-2' : ''} gap-8`}>
+                                <div className="space-y-8">
+                                    {/* Address */}
+                                    <div>
+                                        <h3 className="text-lg font-bold mb-3 text-gray-900 dark:text-white flex items-center gap-3">
+                                            <div className="p-2.5 bg-[#ad2c90]/10 dark:bg-[#ad2c90]/20 rounded-xl">
+                                                <MapPin className="w-5 h-5 text-[#ad2c90] dark:text-[#d35fb9]" />
+                                            </div>
+                                            Lokasi
+                                        </h3>
+                                        <p className="text-gray-600 dark:text-gray-300 leading-relaxed ml-[3.25rem]">
+                                            {selectedDetailBranch.address}
+                                        </p>
+                                    </div>
+
+                                    {/* Schedule */}
+                                    {selectedDetailBranch.schedule && (
+                                        <div className="space-y-4">
+                                            <div>
+                                                <h3 className="text-lg font-bold mb-3 text-gray-900 dark:text-white flex items-center gap-3">
+                                                    <div className="p-2.5 bg-orange-500/10 dark:bg-orange-500/20 rounded-xl">
+                                                        <Calendar className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                                                    </div>
+                                                    Jadwal Praktik
+                                                </h3>
+                                                <div className="text-gray-600 dark:text-gray-300 leading-relaxed ml-[3.25rem] space-y-1">
+                                                    {selectedDetailBranch.schedule.split(', ').map((sch, idx) => (
+                                                        <div key={idx}>{sch}</div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {selectedDetailBranch.schedule_exceptions && selectedDetailBranch.schedule_exceptions.length > 0 && (
+                                                <div className="ml-[3.25rem] mt-4 space-y-3">
+                                                    {selectedDetailBranch.schedule_exceptions.map((exception: any) => (
+                                                        <div key={exception.id} className={`p-4 rounded-xl border ${exception.type === 'libur' ? 'bg-red-50 border-red-100 dark:bg-red-900/10 dark:border-red-900/30' : 'bg-blue-50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-900/30'}`}>
+                                                            <div className="flex items-start gap-3">
+                                                                <AlertCircle className={`w-5 h-5 mt-0.5 ${exception.type === 'libur' ? 'text-red-500' : 'text-blue-500'}`} />
+                                                                <div>
+                                                                    <h4 className={`font-bold text-sm ${exception.type === 'libur' ? 'text-red-800 dark:text-red-400' : 'text-blue-800 dark:text-blue-400'}`}>
+                                                                        {exception.type === 'libur' ? 'Libur Sementara' : 'Pemindahan Jadwal'}
+                                                                    </h4>
+                                                                    <p className={`text-sm mt-1 ${exception.type === 'libur' ? 'text-red-600 dark:text-red-300' : 'text-blue-600 dark:text-blue-300'}`}>
+                                                                        Tanggal Asli: {new Date(exception.original_date).toLocaleDateString('id-ID')}
+                                                                    </p>
+                                                                    {exception.rescheduled_date && (
+                                                                        <p className={`text-sm ${exception.type === 'libur' ? 'text-red-600 dark:text-red-300' : 'text-blue-600 dark:text-blue-300'}`}>
+                                                                            Tanggal Pengganti: {new Date(exception.rescheduled_date).toLocaleDateString('id-ID')}
+                                                                        </p>
+                                                                    )}
+                                                                    <p className={`text-sm mt-2 font-medium ${exception.type === 'libur' ? 'text-red-700 dark:text-red-200' : 'text-blue-700 dark:text-blue-200'}`}>
+                                                                        "{exception.description}"
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Contacts */}
+                                    {selectedDetailBranch.contacts && selectedDetailBranch.contacts.length > 0 && (
+                                        <div>
+                                            <h3 className="text-lg font-bold mb-3 text-gray-900 dark:text-white flex items-center gap-3">
+                                                <div className="p-2.5 bg-blue-500/10 dark:bg-blue-500/20 rounded-xl">
+                                                    <Phone className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                                </div>
+                                                Kontak
+                                            </h3>
+                                            <div className="space-y-3 ml-[3.25rem]">
+                                                {selectedDetailBranch.contacts.map(contact => (
+                                                    <div key={contact.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-3 sm:p-4 bg-gray-50 dark:bg-slate-800/80 rounded-2xl border border-gray-100 dark:border-gray-700/50 hover:shadow-md transition-shadow">
+                                                        <div>
+                                                            <span className="font-semibold text-gray-900 dark:text-gray-200 block">{contact.name}</span>
+                                                            <span className="text-gray-600 dark:text-gray-400 text-sm mt-0.5 block">{contact.phone}</span>
+                                                        </div>
+                                                        {contact.phone && (
+                                                            <a href={`https://wa.me/${contact.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-full sm:w-auto gap-2 px-4 py-2 bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-500/10 dark:text-green-400 dark:hover:bg-green-500/20 rounded-full text-sm font-bold transition-colors">
+                                                                WhatsApp <ExternalLink className="w-3.5 h-3.5" />
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Map */}
+                                {(selectedDetailBranch.embed_map_url || selectedDetailBranch.map_url) && (
+                                    <div className="rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm bg-gray-50 dark:bg-slate-800 h-[300px] sm:h-[400px] lg:h-full lg:min-h-[400px] w-full relative group">
+                                        {selectedDetailBranch.embed_map_url ? (
+                                            <>
+                                                <iframe
+                                                    src={
+                                                        selectedDetailBranch.embed_map_url.includes('<iframe')
+                                                            ? (selectedDetailBranch.embed_map_url.match(/src="([^"]+)"/) || [])[1] || selectedDetailBranch.embed_map_url
+                                                            : selectedDetailBranch.embed_map_url
+                                                    }
+                                                    className="w-full h-full border-0 absolute inset-0 block"
+                                                    allowFullScreen
+                                                    loading="lazy"
+                                                    referrerPolicy="no-referrer-when-downgrade"
+                                                ></iframe>
+
+                                                {/* Floating button to open the exact link provided if map_url is also provided */}
+                                                {selectedDetailBranch.map_url && (
+                                                    <div className="absolute bottom-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                        <a
+                                                            href={selectedDetailBranch.map_url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center px-4 py-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm text-[#ad2c90] dark:text-[#d35fb9] rounded-full shadow-lg hover:scale-105 transition-all font-semibold text-xs border border-gray-200 dark:border-gray-700"
+                                                        >
+                                                            Buka di App <ExternalLink className="ml-1.5 w-3.5 h-3.5" />
+                                                        </a>
+                                                    </div>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <div className="absolute inset-0 p-6 text-center flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-800">
+                                                <div className="p-4 bg-[#ad2c90]/10 rounded-full mb-4">
+                                                    <MapPin className="w-10 h-10 text-[#ad2c90]" />
+                                                </div>
+                                                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Lihat Lokasi di Peta</h3>
+                                                <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm font-medium max-w-[250px]">
+                                                    Untuk melihat rute dan lokasi persisnya, silakan buka aplikasi Google Maps.
+                                                </p>
+                                                <a
+                                                    href={selectedDetailBranch.map_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center px-6 py-3 bg-[#ad2c90] text-white rounded-full hover:bg-[#8a2373] shadow-lg transition-all font-semibold text-sm hover:scale-105"
+                                                >
+                                                    Buka Google Maps <ExternalLink className="ml-2 w-4 h-4" />
+                                                </a>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Gallery */}
+                            {selectedDetailBranch.photos && selectedDetailBranch.photos.length > 1 && (
+                                <div className="pt-8 mt-4 border-t border-gray-100 dark:border-gray-800/50">
+                                    <h3 className="text-xl font-bold mb-5 text-gray-900 dark:text-white">
+                                        Galeri Cabang
+                                    </h3>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-5">
+                                        {selectedDetailBranch.photos.map((photo, idx) => (
+                                            <div key={photo.id} className="rounded-2xl overflow-hidden shadow-sm aspect-square relative group">
+                                                <img
+                                                    src={`/storage/${photo.photo_path}`}
+                                                    alt={`Galeri ${idx + 1}`}
+                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                />
+                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Action Footer */}
+                        <div className="p-6 sm:p-8 pt-0 flex justify-end">
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </GuestLayout>
     );
 }

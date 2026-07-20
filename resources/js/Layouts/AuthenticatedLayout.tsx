@@ -13,6 +13,9 @@ import {
     ChevronLeft,
     ChevronRight,
     Clock,
+    HelpCircle,
+    CalendarOff,
+    Megaphone,
 } from "lucide-react";
 import DarkModeToggle from "@/Components/DarkModeToggle";
 
@@ -239,20 +242,48 @@ export default function Authenticated({
                         }`}
                     >
                         <LayoutDashboard className="w-5 h-5" />
-                        <span className="font-medium">Dashboard</span>
+                        <span className="font-medium">Dasbor</span>
                     </Link>
 
                     {/* Manage Schedules */}
+                    {isSuperadmin && (
+                        <Link
+                            href={route("schedules.index")}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                                route().current("schedules.*")
+                                    ? "bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white"
+                                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
+                            }`}
+                        >
+                            <Clock className="w-5 h-5" />
+                            <span className="font-medium">Kelola Jadwal</span>
+                        </Link>
+                    )}
+
+                    {/* Manage Schedule Exceptions */}
                     <Link
-                        href={route("schedules.index")}
+                        href={route("schedule-exceptions.index")}
                         className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                            route().current("schedules.*")
+                            route().current("schedule-exceptions.*")
                                 ? "bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white"
                                 : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
                         }`}
                     >
-                        <Clock className="w-5 h-5" />
-                        <span className="font-medium">Manage Schedules</span>
+                        <CalendarOff className="w-5 h-5" />
+                        <span className="font-medium">Pengecualian Jadwal</span>
+                    </Link>
+
+                    {/* Manage Announcements */}
+                    <Link
+                        href={route("announcements.index")}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                            route().current("announcements.*")
+                                ? "bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white"
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
+                        }`}
+                    >
+                        <Megaphone className="w-5 h-5" />
+                        <span className="font-medium">Pengumuman</span>
                     </Link>
 
                     {/* Manage Patients */}
@@ -265,7 +296,7 @@ export default function Authenticated({
                         }`}
                     >
                         <User className="w-5 h-5" />
-                        <span className="font-medium">Manage Patients</span>
+                        <span className="font-medium">Kelola Pasien</span>
                     </Link>
 
                     {/* Manage Therapists */}
@@ -278,12 +309,12 @@ export default function Authenticated({
                         }`}
                     >
                         <Users className="w-5 h-5" />
-                        <span className="font-medium">Manage Therapists</span>
+                        <span className="font-medium">Kelola Terapis</span>
                     </Link>
 
                     {/* Attendance */}
                     <div className="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider ml-4">
-                        Attendance
+                        Kehadiran
                     </div>
 
                     <Link
@@ -317,7 +348,7 @@ export default function Authenticated({
                             <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
                             <path d="m9 14 2 2 4-4" />
                         </svg>
-                        <span className="font-medium">Patient Check-In</span>
+                        <span className="font-medium">Pendaftaran Pasien</span>
                     </Link>
 
                     <Link
@@ -344,7 +375,7 @@ export default function Authenticated({
                             <circle cx="8.5" cy="7" r="4" />
                             <polyline points="17 11 19 13 23 9" />
                         </svg>
-                        <span className="font-medium">Therapist Check-In</span>
+                        <span className="font-medium">Pendaftaran Terapis</span>
                     </Link>
 
                     <Link
@@ -372,7 +403,7 @@ export default function Authenticated({
                             <path d="M9 14h6" />
                             <path d="M2 7h20" />
                         </svg>
-                        <span className="font-medium">Attendance Archives</span>
+                        <span className="font-medium">Arsip Kehadiran</span>
                     </Link>
 
                     {isSuperadmin && (
@@ -391,7 +422,7 @@ export default function Authenticated({
                             >
                                 <Users className="w-5 h-5" />
                                 <span className="font-medium">
-                                    Manage Users
+                                    Kelola Pengguna
                                 </span>
                             </Link>
 
@@ -405,7 +436,21 @@ export default function Authenticated({
                             >
                                 <Map className="w-5 h-5" />
                                 <span className="font-medium">
-                                    Manage Branches
+                                    Kelola Cabang
+                                </span>
+                            </Link>
+
+                            <Link
+                                href={route("faqs.index")}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                                    route().current("faqs.*")
+                                        ? "bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white"
+                                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
+                                }`}
+                            >
+                                <HelpCircle className="w-5 h-5" />
+                                <span className="font-medium">
+                                    Kelola FAQ
                                 </span>
                             </Link>
 
@@ -435,7 +480,7 @@ export default function Authenticated({
                                     <path d="M16 17H8"></path>
                                     <path d="M10 9H8"></path>
                                 </svg>
-                                <span className="font-medium">Audit Logs</span>
+                                <span className="font-medium">Log Audit</span>
                             </Link>
                         </>
                     )}

@@ -73,6 +73,17 @@ class TherapistAttendanceController extends Controller
         return back()->with('success', 'Attendance updated.');
     }
 
+    public function checkoutAll(Request $request): RedirectResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $date = Carbon::today()->toDateString();
+        
+        $this->attendanceService->checkoutAll($user, $date);
+        
+        return back()->with('success', 'Semua terapis berhasil di-checkout.');
+    }
+
     public function destroy(string $id): RedirectResponse
     {
         $attendance = TherapistAttendance::findOrFail((int)$id);

@@ -24,13 +24,13 @@ class PatientAttendanceService
     public function getAttendances(User $user, string $date): Collection
     {
         $query = PatientAttendance::with(['patient.branches', 'therapists', 'branch'])
-            ->whereDate('check_in', $date);
+            ->whereDate('created_at', $date);
 
         if (!$user->isSuperadmin()) {
             $query->where('branch_id', $user->branch_id);
         }
 
-        return $query->latest('check_in')->get();
+        return $query->latest('created_at')->get();
     }
 
     /**
@@ -86,7 +86,7 @@ class PatientAttendanceService
 
         $existing = PatientAttendance::where('patient_id', $patient->id)
             ->where('branch_id', $branchId)
-            ->whereDate('check_in', Carbon::today())
+            ->whereDate('created_at', Carbon::today())
             ->exists();
 
         if ($existing) {
@@ -103,7 +103,7 @@ class PatientAttendanceService
             $attendance = PatientAttendance::create([
                 'patient_id' => $patient->id,
                 'branch_id' => $branchId,
-                'check_in' => now(),
+                'check_in' => null, // Initial status is 'Dalam Antrian'
                 'complaint' => $complaintToSnapshot,
             ]);
 
@@ -126,6 +126,11 @@ class PatientAttendanceService
     {
         if (!empty($data['check_out_now'])) {
             $attendance->update(['check_out' => now()]);
+            return;
+        }
+
+        if (!empty($data['check_in_now'])) {
+            $attendance->update(['check_in' => now()]);
             return;
         }
 
@@ -155,5 +160,24 @@ class PatientAttendanceService
     public function destroy(PatientAttendance $attendance): void
     {
         $attendance->delete();
+    }
+
+    /**
+     * Check out all active attendances for the given date.
+     *
+     * @param User $user
+     * @param string $date
+     * @return void
+     */
+    public function checkoutAll(User $user, string $date): void
+    {
+        $query = PatientAttendance::whereDate('created_at', $date)
+            ->whereNull('check_out');
+
+        if (!$user->isSuperadmin()) {
+            $query->where('branch_id', $user->branch_id);
+        }
+
+        $query->update(['check_out' => now()]);
     }
 }

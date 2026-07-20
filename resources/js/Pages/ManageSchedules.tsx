@@ -83,7 +83,7 @@ export default function ManageSchedules({ branches }: ManageSchedulesProps) {
 
     return (
         <AuthenticatedLayout>
-            <Head title="Manage Schedules" />
+            <Head title="Manajemen Jadwal" />
 
             <div className="max-w-7xl mx-auto pb-12">
                 <div className="bg-white dark:bg-slate-900 overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 dark:border-gray-800">
@@ -92,10 +92,10 @@ export default function ManageSchedules({ branches }: ManageSchedulesProps) {
                             <div>
                                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                     <Clock className="w-6 h-6 text-[#ad2c90]" />
-                                    Branch Schedule Management
+                                    Manajemen Jadwal Cabang
                                 </h2>
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                    Set open days and hours for Longevitology branches
+                                    Atur hari buka dan jam operasional cabang Longevitology
                                 </p>
                             </div>
                         </div>
@@ -104,7 +104,7 @@ export default function ManageSchedules({ branches }: ManageSchedulesProps) {
                     <div className="p-6">
                         <div className="mb-8 p-4 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Select Branch to Manage
+                                Pilih Cabang
                             </label>
                             <select
                                 value={selectedBranchId}
@@ -123,14 +123,14 @@ export default function ManageSchedules({ branches }: ManageSchedulesProps) {
                         {!selectedBranchId ? (
                             <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                                 {auth.user.role?.name === 'admin'
-                                    ? "You are not assigned to any branch yet. Please contact a Superadmin."
-                                    : "Please select a branch above to manage its schedule."}
+                                    ? "Anda belum ditugaskan ke cabang mana pun. Silakan hubungi Superadmin."
+                                    : "Silakan pilih cabang di atas untuk mengelola jadwalnya."}
                             </div>
                         ) : (
                             <div>
                                 <div className="mb-6 flex justify-between items-center">
                                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                                        Schedule for <span className="text-[#ad2c90]">{activeBranch?.name}</span>
+                                        Jadwal untuk <span className="text-[#ad2c90]">{activeBranch?.name}</span>
                                     </h3>
                                     {!isEditing && (
                                         <Button
@@ -138,7 +138,7 @@ export default function ManageSchedules({ branches }: ManageSchedulesProps) {
                                             className="bg-[#ad2c90] hover:bg-[#9c2782]"
                                         >
                                             <Pencil className="w-4 h-4 mr-2" />
-                                            Edit Schedule
+                                            Edit Jadwal
                                         </Button>
                                     )}
                                 </div>
@@ -148,15 +148,15 @@ export default function ManageSchedules({ branches }: ManageSchedulesProps) {
                                         <table className="w-full text-left border-collapse">
                                             <thead>
                                                 <tr className="bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-400 text-sm uppercase">
-                                                    <th className="px-6 py-3 font-semibold">Day</th>
-                                                    <th className="px-6 py-3 font-semibold">Timing</th>
+                                                    <th className="px-6 py-3 font-semibold">Hari</th>
+                                                    <th className="px-6 py-3 font-semibold">Waktu</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                                                 {activeBranch?.schedules.length === 0 ? (
                                                     <tr>
                                                         <td colSpan={2} className="px-6 py-8 text-center text-gray-500">
-                                                            No schedules set for this branch. Click Edit to add.
+                                                            Belum ada jadwal untuk cabang ini. Klik Edit untuk menambahkan.
                                                         </td>
                                                     </tr>
                                                 ) : (
@@ -176,7 +176,7 @@ export default function ManageSchedules({ branches }: ManageSchedulesProps) {
                                     <form onSubmit={handleSubmit}>
                                         <div className="mb-4 flex justify-between items-center">
                                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                You are currently editing schedules. Add or remove rows as needed.
+                                                Anda sedang mengedit jadwal. Tambahkan atau hapus baris sesuai kebutuhan.
                                             </p>
                                             <Button
                                                 type="button"
@@ -184,7 +184,7 @@ export default function ManageSchedules({ branches }: ManageSchedulesProps) {
                                                 variant="outline"
                                                 className="border-purple-500 text-purple-600 hover:bg-purple-50 dark:hover:bg-slate-800"
                                             >
-                                                <Plus className="w-4 h-4 mr-1" /> Add Day
+                                                <Plus className="w-4 h-4 mr-1" /> Tambah Hari
                                             </Button>
                                         </div>
 
@@ -192,7 +192,7 @@ export default function ManageSchedules({ branches }: ManageSchedulesProps) {
                                             {data.schedules.map((row, index) => (
                                                 <div key={index} className="flex flex-wrap items-end gap-4 p-4 bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
                                                     <div className="flex-1 min-w-[150px]">
-                                                        <label className="block text-xs font-medium text-gray-500 mb-1">Day</label>
+                                                        <label className="block text-xs font-medium text-gray-500 mb-1">Hari</label>
                                                         <select
                                                             value={row.day}
                                                             onChange={(e) => updateScheduleRow(index, 'day', e.target.value)}
@@ -202,7 +202,7 @@ export default function ManageSchedules({ branches }: ManageSchedulesProps) {
                                                         </select>
                                                     </div>
                                                     <div className="flex-1 min-w-[120px]">
-                                                        <label className="block text-xs font-medium text-gray-500 mb-1">Opens at</label>
+                                                        <label className="block text-xs font-medium text-gray-500 mb-1">Buka Jam</label>
                                                         <input
                                                             type="time"
                                                             value={row.time_start}
@@ -211,7 +211,7 @@ export default function ManageSchedules({ branches }: ManageSchedulesProps) {
                                                         />
                                                     </div>
                                                     <div className="flex-1 min-w-[120px]">
-                                                        <label className="block text-xs font-medium text-gray-500 mb-1">Closes at</label>
+                                                        <label className="block text-xs font-medium text-gray-500 mb-1">Sampai Jam</label>
                                                         <input
                                                             type="time"
                                                             value={row.time_end}
@@ -237,7 +237,7 @@ export default function ManageSchedules({ branches }: ManageSchedulesProps) {
                                                 variant="outline"
                                                 className="px-6"
                                             >
-                                                Cancel
+                                                Batal
                                             </Button>
                                             <Button
                                                 type="submit"
@@ -245,7 +245,7 @@ export default function ManageSchedules({ branches }: ManageSchedulesProps) {
                                                 className="bg-gradient-to-r from-[#ad2c90] to-[#5400d4] px-8"
                                             >
                                                 <Save className="w-4 h-4 mr-2" />
-                                                Save Changes
+                                                Simpan
                                             </Button>
                                         </div>
                                     </form>

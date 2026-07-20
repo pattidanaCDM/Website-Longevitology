@@ -127,11 +127,11 @@ export default function ManageAuditLogs({
         <AuthenticatedLayout
             header={
                 <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                    Audit Logs
+                    Log Audit
                 </h2>
             }
         >
-            <Head title="Audit Logs" />
+            <Head title="Log Audit" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -141,11 +141,11 @@ export default function ManageAuditLogs({
                             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Search
+                                        Cari
                                     </label>
                                     <input
                                         type="text"
-                                        placeholder="Search logs..."
+                                        placeholder="Cari log..."
                                         value={search}
                                         onChange={(e) =>
                                             setSearch(e.target.value)
@@ -159,7 +159,7 @@ export default function ManageAuditLogs({
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        User
+                                        Pengguna
                                     </label>
                                     <select
                                         value={selectedUser}
@@ -168,7 +168,7 @@ export default function ManageAuditLogs({
                                         }
                                         className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                     >
-                                        <option value="">All Users</option>
+                                        <option value="">Semua Pengguna</option>
                                         {users.map((u) => (
                                             <option key={u.id} value={u.id}>
                                                 {u.name}
@@ -179,7 +179,7 @@ export default function ManageAuditLogs({
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Event
+                                        Aksi
                                     </label>
                                     <select
                                         value={selectedEvent}
@@ -188,7 +188,7 @@ export default function ManageAuditLogs({
                                         }
                                         className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                     >
-                                        <option value="">All Events</option>
+                                        <option value="">Semua Aksi</option>
                                         {events.map((e) => (
                                             <option key={e} value={e}>
                                                 {e}
@@ -199,7 +199,7 @@ export default function ManageAuditLogs({
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Type
+                                        Tipe
                                     </label>
                                     <select
                                         value={selectedType}
@@ -208,7 +208,7 @@ export default function ManageAuditLogs({
                                         }
                                         className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                     >
-                                        <option value="">All Types</option>
+                                        <option value="">Semua Tipe</option>
                                         {types.map((t) => (
                                             <option key={t} value={t}>
                                                 {t.split("\\").pop()}
@@ -222,13 +222,13 @@ export default function ManageAuditLogs({
                                         onClick={applyFilters}
                                         className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                     >
-                                        Filter
+                                        Saring
                                     </button>
                                     <button
                                         onClick={clearFilters}
                                         className="inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-slate-700 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                     >
-                                        Clear
+                                        Bersihkan
                                     </button>
                                 </div>
                             </div>
@@ -239,19 +239,19 @@ export default function ManageAuditLogs({
                                 <thead className="bg-gray-50 dark:bg-slate-800/50">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Time
+                                            Waktu
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            User
+                                            Pengguna
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Action
+                                            Aksi
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Description
+                                            Deskripsi
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Changes
+                                            Perubahan
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             IP
@@ -265,7 +265,7 @@ export default function ManageAuditLogs({
                                                 colSpan={6}
                                                 className="px-6 py-4 text-center text-sm text-gray-500"
                                             >
-                                                No audit logs found.
+                                                Tidak ada log audit ditemukan.
                                             </td>
                                         </tr>
                                     ) : (
@@ -370,22 +370,22 @@ export default function ManageAuditLogs({
                             <div className="mt-4 flex justify-between items-center">
                                 <div>
                                     <p className="text-sm text-gray-700 dark:text-gray-400">
-                                        Showing{" "}
+                                        Menampilkan{" "}
                                         <span className="font-medium">
                                             {(logs.current_page - 1) * 50 + 1}
                                         </span>{" "}
-                                        to{" "}
+                                        hingga{" "}
                                         <span className="font-medium">
                                             {Math.min(
                                                 logs.current_page * 50,
                                                 logs.total,
                                             )}
                                         </span>{" "}
-                                        of{" "}
+                                        dari{" "}
                                         <span className="font-medium">
                                             {logs.total}
                                         </span>{" "}
-                                        results
+                                        hasil
                                     </p>
                                 </div>
                                 <div>

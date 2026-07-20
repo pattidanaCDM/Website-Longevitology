@@ -15,6 +15,11 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\TherapistExport;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Illuminate\Http\Response as HttpResponse;
 
 class TherapistController extends Controller
 {
@@ -30,15 +35,29 @@ class TherapistController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
+        $query = $this->getTherapistsQuery(request());
+        $therapists = $query->paginate(10)->withQueryString();
+
+        return Inertia::render('Therapists/Index', [
+            'therapists' => $therapists,
+            'branches' => $user->isSuperadmin() ? Branch::all() : [$user->branch],
+            'filters' => request()->only(['search', 'branch_id']),
+        ]);
+    }
+
+    private function getTherapistsQuery(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         $query = Therapist::with(['branches']);
 
         if (!$user->isSuperadmin()) {
-            // Branch Admin: only view therapists in their branch
             $query->whereHas('branches', function ($q) use ($user) {
                 $q->where('branches.id', $user->branch_id);
             });
         } else {
-            $branchId = request('branch_id');
+            $branchId = $request->input('branch_id');
             if ($branchId && $branchId !== 'all') {
                 $query->whereHas('branches', function ($q) use ($branchId) {
                     $q->where('branches.id', $branchId);
@@ -46,20 +65,28 @@ class TherapistController extends Controller
             }
         }
 
-        if ($search = request('search')) {
+        if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('phone', 'like', "%{$search}%");
             });
         }
 
-        $therapists = $query->latest('updated_at')->paginate(10)->withQueryString();
+        return $query->latest('updated_at');
+    }
 
-        return Inertia::render('Therapists/Index', [
-            'therapists' => $therapists,
-            'branches' => $user->isSuperadmin() ? Branch::all() : [$user->branch],
-            'filters' => request()->only(['search', 'branch_id']),
-        ]);
+    public function exportExcel(Request $request): BinaryFileResponse
+    {
+        $therapists = $this->getTherapistsQuery($request)->get();
+        return Excel::download(new TherapistExport($therapists), 'data_terapis_' . date('Y-m-d') . '.xlsx');
+    }
+
+    public function exportPdf(Request $request): HttpResponse
+    {
+        $therapists = $this->getTherapistsQuery($request)->get();
+        $pdf = Pdf::loadView('exports.therapist_pdf', compact('therapists'));
+        $pdf->setPaper('a4', 'landscape');
+        return $pdf->download('data_terapis_' . date('Y-m-d') . '.pdf');
     }
 
     /**
@@ -93,7 +120,7 @@ class TherapistController extends Controller
      */
     public function verify(Request $request): JsonResponse
     {
-        $search = $request->search;
+        $search = preg_replace('/[^0-9]/', '', (string) $request->search);
 
         if (empty($search)) {
             return response()->json(['therapist' => null]);
@@ -102,6 +129,8 @@ class TherapistController extends Controller
         $therapist = Therapist::where('phone', $search)
             ->with(['branches' => function ($q) {
                 $q->select('branches.id', 'branches.name');
+            }, 'attendances' => function ($q) {
+                $q->latest('check_in')->with('branch:id,name')->limit(1);
             }])
             ->first();
 

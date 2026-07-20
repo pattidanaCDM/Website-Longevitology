@@ -24,6 +24,7 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
         name: '',
         email: '',
         password: '',
+        password_confirmation: '',
         role_id: '',
         branch_id: '',
     });
@@ -116,14 +117,14 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
 
     return (
         <AuthenticatedLayout>
-            <Head title="Manage Users" />
+            <Head title="Kelola Pengguna" />
 
             <div className="max-w-7xl mx-auto">
                 <div className="bg-white dark:bg-slate-900 overflow-hidden shadow-sm sm:rounded-lg transition-colors duration-300">
                     {/* Page Header */}
                     <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">User Management</h2>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage users and their roles</p>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Manajemen Pengguna</h2>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Kelola pengguna dan peran mereka</p>
                     </div>
 
                     {/* Tab Navigation */}
@@ -137,7 +138,7 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
                                     }`}
                             >
                                 <UsersIcon className="w-4 h-4" />
-                                Users
+                                Pengguna
                             </button>
                             <button
                                 onClick={() => setActiveTab('roles')}
@@ -147,7 +148,7 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
                                     }`}
                             >
                                 <UserCog className="w-4 h-4" />
-                                Roles
+                                Peran
                             </button>
                         </nav>
                     </div>
@@ -157,13 +158,13 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
                         {activeTab === 'users' && (
                             <div>
                                 <div className="flex justify-between items-center mb-6">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">All Users</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Semua Pengguna</h3>
                                     <Button
                                         onClick={() => setShowAddModal(true)}
                                         className="bg-gradient-to-r from-[#ad2c90] to-[#5400d4] hover:from-[#7a2ce0] hover:to-[#ad2c90]"
                                     >
                                         <Plus className="w-4 h-4 mr-2" />
-                                        Add User
+                                        Tambah Pengguna
                                     </Button>
                                 </div>
 
@@ -171,11 +172,11 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
                                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                         <thead className="bg-gray-50 dark:bg-slate-800">
                                             <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nama</th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Role</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Branch</th>
-                                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Peran</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Cabang</th>
+                                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Aksi</th>
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-gray-700">
@@ -196,21 +197,21 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
                                                             <button
                                                                 onClick={() => openEditModal(user)}
                                                                 className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                                                                title="Edit User"
+                                                                title="Ubah Pengguna"
                                                             >
                                                                 <Pencil className="w-4 h-4" />
                                                             </button>
                                                             <button
                                                                 onClick={() => openResetModal(user)}
                                                                 className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
-                                                                title="Reset Password"
+                                                                title="Atur Ulang Kata Sandi"
                                                             >
                                                                 <Key className="w-4 h-4" />
                                                             </button>
                                                             <button
                                                                 onClick={() => confirmDeleteUser(user)}
                                                                 className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                                                title="Delete User"
+                                                                title="Hapus Pengguna"
                                                             >
                                                                 <Trash2 className="w-4 h-4" />
                                                             </button>
@@ -226,13 +227,13 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
 
                         {activeTab === 'roles' && (
                             <div>
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">All Roles</h3>
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Semua Peran</h3>
                                 <div className="overflow-x-auto">
                                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                         <thead className="bg-gray-50 dark:bg-slate-800">
                                             <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Role Name</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nama Peran</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Deskripsi</th>
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-gray-700">
@@ -260,10 +261,10 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
             {/* Add User Modal */}
             <Modal show={showAddModal} onClose={() => { setShowAddModal(false); reset(); }} maxWidth="md">
                 <div className="p-6">
-                    <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Add New User</h3>
+                    <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Tambah Pengguna Baru</h3>
                         <form onSubmit={handleAddUser} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nama</label>
                                 <input
                                     type="text"
                                     value={addData.name}
@@ -283,7 +284,7 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
                                 {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Kata Sandi</label>
                                 <input
                                     type="password"
                                     value={addData.password}
@@ -293,13 +294,23 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
                                 {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Konfirmasi Kata Sandi</label>
+                                <input
+                                    type="password"
+                                    value={addData.password_confirmation}
+                                    onChange={(e) => setAddData('password_confirmation', e.target.value)}
+                                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-slate-800 dark:text-white shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                />
+                                {errors.password_confirmation && <p className="mt-1 text-sm text-red-600">{errors.password_confirmation}</p>}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Peran</label>
                                 <select
                                     value={addData.role_id}
                                     onChange={(e) => setAddData('role_id', e.target.value)}
                                     className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-slate-800 dark:text-white shadow-sm focus:border-purple-500 focus:ring-purple-500"
                                 >
-                                    <option value="">Select Role</option>
+                                    <option value="">Pilih Peran</option>
                                     {roles.map((role) => (
                                         <option key={role.id} value={role.id}>{role.name}</option>
                                     ))}
@@ -307,13 +318,13 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
                                 {errors.role_id && <p className="mt-1 text-sm text-red-600">{errors.role_id}</p>}
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Branch (Optional for Admins)</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Cabang (Opsional untuk Admin)</label>
                                 <select
                                     value={addData.branch_id}
                                     onChange={(e) => setAddData('branch_id', e.target.value)}
                                     className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-slate-800 dark:text-white shadow-sm focus:border-purple-500 focus:ring-purple-500"
                                 >
-                                    <option value="">Select Branch</option>
+                                    <option value="">Pilih Cabang</option>
                                     {branches.map((branch) => (
                                         <option key={branch.id} value={branch.id}>{branch.name}</option>
                                     ))}
@@ -321,10 +332,10 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
                             </div>
                             <div className="flex justify-end gap-2">
                                 <Button type="button" onClick={() => setShowAddModal(false)} variant="outline">
-                                    Cancel
+                                    Batal
                                 </Button>
                                 <Button type="submit" disabled={processing} className="bg-gradient-to-r from-[#ad2c90] to-[#5400d4]">
-                                    Add User
+                                    Tambah Pengguna
                                 </Button>
                             </div>
                         </form>
@@ -334,10 +345,10 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
             {/* Edit User Modal */}
             <Modal show={showEditModal} onClose={() => setShowEditModal(false)} maxWidth="md">
                 <div className="p-6">
-                    <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Edit User</h3>
+                    <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Ubah Pengguna</h3>
                         <form onSubmit={handleEditUser} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nama</label>
                                 <input
                                     type="text"
                                     value={editData.name}
@@ -357,13 +368,13 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
                                 {editErrors.email && <p className="mt-1 text-sm text-red-600">{editErrors.email}</p>}
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Peran</label>
                                 <select
                                     value={editData.role_id}
                                     onChange={(e) => setEditData('role_id', e.target.value)}
                                     className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-slate-800 dark:text-white shadow-sm focus:border-purple-500 focus:ring-purple-500"
                                 >
-                                    <option value="">Select Role</option>
+                                    <option value="">Pilih Peran</option>
                                     {roles.map((role) => (
                                         <option key={role.id} value={role.id}>{role.name}</option>
                                     ))}
@@ -371,13 +382,13 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
                                 {editErrors.role_id && <p className="mt-1 text-sm text-red-600">{editErrors.role_id}</p>}
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Branch (Optional for Admins)</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Cabang (Opsional untuk Admin)</label>
                                 <select
                                     value={editData.branch_id}
                                     onChange={(e) => setEditData('branch_id', e.target.value)}
                                     className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-slate-800 dark:text-white shadow-sm focus:border-purple-500 focus:ring-purple-500"
                                 >
-                                    <option value="">Select Branch</option>
+                                    <option value="">Pilih Cabang</option>
                                     {branches.map((branch) => (
                                         <option key={branch.id} value={branch.id}>{branch.name}</option>
                                     ))}
@@ -385,10 +396,10 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
                             </div>
                             <div className="flex justify-end gap-2">
                                 <Button type="button" onClick={() => setShowEditModal(false)} variant="outline">
-                                    Cancel
+                                    Batal
                                 </Button>
                                 <Button type="submit" disabled={editProcessing} className="bg-gradient-to-r from-[#ad2c90] to-[#5400d4]">
-                                    Update User
+                                    Perbarui Pengguna
                                 </Button>
                             </div>
                         </form>
@@ -400,17 +411,17 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
             {/* Send Password Reset Email Modal */}
             <Modal show={showResetModal} onClose={() => setShowResetModal(false)} maxWidth="md">
                 <div className="p-6">
-                    <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Send Password Reset Email</h3>
+                    <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Kirim Email Atur Ulang Kata Sandi</h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                            A password reset link will be sent to <strong>{selectedUser?.email}</strong>. The user will receive an email with instructions to reset their password.
+                            Tautan atur ulang kata sandi akan dikirim ke <strong>{selectedUser?.email}</strong>. Pengguna akan menerima email yang berisi petunjuk untuk mengatur ulang kata sandi mereka.
                         </p>
                         <form onSubmit={handleResetPassword} className="space-y-4">
                             <div className="flex justify-end gap-2">
                                 <Button type="button" onClick={() => setShowResetModal(false)} variant="outline">
-                                    Cancel
+                                    Batal
                                 </Button>
                                 <Button type="submit" disabled={resetProcessing} className="bg-gradient-to-r from-[#ad2c90] to-[#5400d4]">
-                                    Send Reset Link
+                                    Kirim Tautan Atur Ulang
                                 </Button>
                             </div>
                         </form>
@@ -421,10 +432,10 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
             <Modal show={showDeleteModal} onClose={() => setShowDeleteModal(false)} maxWidth="sm">
                 <div className="p-6">
                     <h2 className="text-lg font-bold mb-4 text-red-600 dark:text-red-400">
-                        Delete User
+                        Hapus Pengguna
                     </h2>
                     <p className="text-gray-700 dark:text-gray-300">
-                        Are you sure you want to delete <strong>{userToDelete?.name}</strong>? This action cannot be undone.
+                        Apakah Anda yakin ingin menghapus <strong>{userToDelete?.name}</strong>? Tindakan ini tidak dapat dibatalkan.
                     </p>
                     <div className="mt-6 flex justify-end gap-2">
                         <Button
@@ -432,14 +443,14 @@ export default function ManageUsers({ users, roles, branches }: ManageUsersProps
                             onClick={() => setShowDeleteModal(false)}
                             className="dark:bg-slate-700 dark:text-gray-200 dark:hover:bg-slate-600"
                         >
-                            Cancel
+                            Batal
                         </Button>
                         <Button
                             onClick={handleDeleteUser}
                             disabled={deleteProcessing}
                             className="bg-red-600 hover:bg-red-700 text-white dark:bg-red-700 dark:hover:bg-red-800"
                         >
-                            Confirm Delete
+                            Konfirmasi Hapus
                         </Button>
                     </div>
                 </div>

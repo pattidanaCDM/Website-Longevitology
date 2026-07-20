@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->string('code', 10)->nullable()->unique();
             $table->text('address');
             $table->string('map_url')->nullable();
+            $table->text('embed_map_url')->nullable();
             $table->timestamps();
         });
     }

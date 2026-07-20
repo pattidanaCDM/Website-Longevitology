@@ -72,9 +72,9 @@ export default function Login({ status, canResetPassword }: { status?: string, c
                                 >
                                     <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-[#ad2c90] transition-colors" />
                                 </Link>
-                                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Hello!</h2>
+                                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Halo!</h2>
                             </div>
-                            <p className="text-gray-500 dark:text-slate-400">Sign in to your account</p>
+                            <p className="text-gray-500 dark:text-slate-400">Masuk ke Akun</p>
                         </div>
 
                         {status && <div className="mb-4 font-medium text-sm text-green-600">{status}</div>}
@@ -137,7 +137,7 @@ export default function Login({ status, canResetPassword }: { status?: string, c
                                         onChange={(e) => setData('remember', e.target.checked)}
                                         className="text-[#ad2c90] focus:ring-[#ad2c90] rounded border-gray-300"
                                     />
-                                    <span className="text-gray-400 group-hover:text-gray-600 transition-colors">Remember me</span>
+                                    <span className="text-gray-400 group-hover:text-gray-600 transition-colors">Ingat Saya</span>
                                 </label>
 
                                 {canResetPassword && (
@@ -145,7 +145,7 @@ export default function Login({ status, canResetPassword }: { status?: string, c
                                         href={route('password.request')}
                                         className="text-purple-400 hover:text-[#ad2c90] transition-colors"
                                     >
-                                        Forgot password?
+                                        Lupa Password?
                                     </Link>
                                 )}
                             </div>

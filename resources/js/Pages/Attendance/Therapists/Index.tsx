@@ -5,6 +5,8 @@ import { PageProps, Therapist, Branch } from "@/types";
 import { Button } from "@/Components/ui/button";
 import TextInput from "@/Components/TextInput";
 import InputLabel from "@/Components/InputLabel";
+import Modal from "@/Components/Modal";
+import SecondaryButton from "@/Components/SecondaryButton";
 import SearchableSelect from "@/Components/SearchableSelect";
 import { format } from "date-fns";
 import {
@@ -38,6 +40,8 @@ export default function TherapistAttendanceIndex({ attendances, branches, availa
         branch_id: currentBranchId ? currentBranchId.toString() : "",
     });
 
+    const [confirmingCheckOutAll, setConfirmingCheckOutAll] = useState(false);
+
 
 
     const handleCheckIn = (e: React.FormEvent) => {
@@ -68,24 +72,39 @@ export default function TherapistAttendanceIndex({ attendances, branches, availa
         });
     };
 
+    const confirmCheckOutAll = () => {
+        setConfirmingCheckOutAll(true);
+    };
+
+    const closeCheckOutAllModal = () => {
+        setConfirmingCheckOutAll(false);
+    };
+
+    const handleCheckOutAll = () => {
+        router.post(route("attendance.therapists.checkout-all"), {}, {
+            preserveScroll: true,
+            onSuccess: () => closeCheckOutAllModal(),
+        });
+    };
+
 
 
     return (
         <AuthenticatedLayout
             header={
                 <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                    Therapist Attendance
+                    Kehadiran Terapis
                 </h2>
             }
         >
-            <Head title="Therapist Attendance" />
+            <Head title="Kehadiran Terapis" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
                     {/* Check-in Section */}
                     <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 p-6 rounded-lg shadow">
                         <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">
-                            Check In Therapist {!isSuperadmin && auth.user.branch ? `- ${auth.user.branch.name}` : ''}
+                            Check In Terapis {!isSuperadmin && auth.user.branch ? `- ${auth.user.branch.name}` : ''}
                         </h3>
                         <form
                             onSubmit={handleCheckIn}
@@ -93,7 +112,7 @@ export default function TherapistAttendanceIndex({ attendances, branches, availa
                         >
                             {isSuperadmin && branches && (
                                 <div className="flex-1">
-                                    <InputLabel htmlFor="branch_id">Branch</InputLabel>
+                                    <InputLabel htmlFor="branch_id">Cabang</InputLabel>
                                     <select
                                         id="branch_id"
                                         value={data.branch_id}
@@ -101,7 +120,7 @@ export default function TherapistAttendanceIndex({ attendances, branches, availa
                                         className="mt-1 block w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
                                         required
                                     >
-                                        <option value="">Select Branch</option>
+                                        <option value="">Pilih Cabang</option>
                                         {branches.map((branch) => (
                                             <option key={branch.id} value={branch.id}>
                                                 {branch.name}
@@ -116,7 +135,7 @@ export default function TherapistAttendanceIndex({ attendances, branches, availa
 
                             <div className="flex-1">
                                 <InputLabel htmlFor="therapist_id">
-                                    Therapist
+                                    Terapis
                                 </InputLabel>
                                 <SearchableSelect
                                     options={availableTherapists.map(t => ({
@@ -126,7 +145,7 @@ export default function TherapistAttendanceIndex({ attendances, branches, availa
                                     }))}
                                     value={data.therapist_id}
                                     onChange={handleTherapistChange}
-                                    placeholder={!isSuperadmin || data.branch_id ? "Select a therapist..." : "Please select a branch first"}
+                                    placeholder={!isSuperadmin || data.branch_id ? "Pilih terapis..." : "Silakan pilih cabang terlebih dahulu"}
                                 />
                                 {errors.therapist_id && (
                                     <span className="text-red-500 text-sm">
@@ -145,9 +164,16 @@ export default function TherapistAttendanceIndex({ attendances, branches, availa
                     <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 p-6 rounded-lg shadow">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                                Attendance for{" "}
+                                Kehadiran untuk{" "}
                                 {format(new Date(), "PPP")}
                             </h3>
+                            <Button
+                                variant="outline"
+                                onClick={confirmCheckOutAll}
+                                className="text-yellow-600 border-yellow-600 hover:bg-yellow-50 dark:text-yellow-500 dark:border-yellow-600 dark:hover:bg-yellow-900/30"
+                            >
+                                Check Out Semua
+                            </Button>
                         </div>
 
                         <div className="overflow-x-auto">
@@ -155,19 +181,19 @@ export default function TherapistAttendanceIndex({ attendances, branches, availa
                                 <thead className="bg-gray-50 dark:bg-slate-800/50">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Time
+                                            Waktu
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Therapist
+                                            Terapis
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Branch
+                                            Cabang
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             Status
                                         </th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Actions
+                                            Aksi
                                         </th>
                                     </tr>
                                 </thead>
@@ -178,7 +204,7 @@ export default function TherapistAttendanceIndex({ attendances, branches, availa
                                                 colSpan={5}
                                                 className="px-6 py-4 text-center text-gray-500 dark:text-gray-400"
                                             >
-                                                No records found for this date.
+                                                Tidak ada catatan ditemukan untuk tanggal ini.
                                             </td>
                                         </tr>
                                     ) : (
@@ -186,7 +212,7 @@ export default function TherapistAttendanceIndex({ attendances, branches, availa
                                             <tr key={record.id}>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                                                     <div>
-                                                        In:{" "}
+                                                        Masuk:{" "}
                                                         {format(
                                                             new Date(
                                                                 record.check_in,
@@ -196,7 +222,7 @@ export default function TherapistAttendanceIndex({ attendances, branches, availa
                                                     </div>
                                                     {record.check_out && (
                                                         <div className="text-gray-550 dark:text-gray-400">
-                                                            Out:{" "}
+                                                            Keluar:{" "}
                                                             {format(
                                                                 new Date(
                                                                     record.check_out,
@@ -223,11 +249,11 @@ export default function TherapistAttendanceIndex({ attendances, branches, availa
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     {record.check_out ? (
                                                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-950/30 dark:text-green-400">
-                                                            Completed
+                                                            Selesai
                                                         </span>
                                                     ) : (
                                                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-950/30 dark:text-yellow-400">
-                                                            Checked In
+                                                            Sudah Check In
                                                         </span>
                                                     )}
                                                 </td>
@@ -256,7 +282,7 @@ export default function TherapistAttendanceIndex({ attendances, branches, availa
                                                             )
                                                         }
                                                         className="text-red-600 hover:text-red-900 ml-2"
-                                                        title="Delete Record"
+                                                        title="Hapus Catatan"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
@@ -270,6 +296,28 @@ export default function TherapistAttendanceIndex({ attendances, branches, availa
                     </div>
                 </div>
             </div>
+
+            <Modal show={confirmingCheckOutAll} onClose={closeCheckOutAllModal} maxWidth="md">
+                <div className="p-6">
+                    <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        Konfirmasi Check Out Semua
+                    </h2>
+                    <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                        Apakah Anda yakin ingin check out semua terapis yang masih aktif pada hari ini? Tindakan ini akan mencatat waktu check-out saat ini untuk semua terapis tersebut.
+                    </p>
+                    <div className="mt-6 flex justify-end space-x-3">
+                        <SecondaryButton onClick={closeCheckOutAllModal}>
+                            Batal
+                        </SecondaryButton>
+                        <Button
+                            variant="destructive"
+                            onClick={handleCheckOutAll}
+                        >
+                            Ya, Check Out Semua
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </AuthenticatedLayout>
     );
 }

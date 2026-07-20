@@ -78,7 +78,7 @@ export default function Dashboard({
             header={
                 <div className="flex justify-between items-center">
                     <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Dashboard
+                        Dasbor
                     </h2>
                     {isSuperadmin && filters.all_branches && (
                         <select
@@ -86,7 +86,7 @@ export default function Dashboard({
                             onChange={handleBranchChange}
                             defaultValue={filters.branch_id || ""}
                         >
-                            <option value="">All Branches</option>
+                            <option value="">Semua Cabang</option>
                             {filters.all_branches.map((branch) => (
                                 <option key={branch.id} value={branch.id}>
                                     {branch.name}
@@ -97,7 +97,7 @@ export default function Dashboard({
                 </div>
             }
         >
-            <Head title="Dashboard" />
+            <Head title="Dasbor" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
@@ -106,7 +106,7 @@ export default function Dashboard({
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">
-                                    Daily Patients
+                                    Pasien Harian
                                 </CardTitle>
                                 <Activity className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
@@ -115,14 +115,14 @@ export default function Dashboard({
                                     {stats.daily_attendance}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
-                                    Checked in today
+                                    Tercatat hari ini
                                 </p>
                             </CardContent>
                         </Card>
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">
-                                    Weekly Patients
+                                    Pasien Mingguan
                                 </CardTitle>
                                 <CalendarDays className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
@@ -131,14 +131,14 @@ export default function Dashboard({
                                     {stats.weekly_attendance}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
-                                    Check-ins this week
+                                    Tercatat minggu ini
                                 </p>
                             </CardContent>
                         </Card>
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">
-                                    Monthly Patients
+                                    Pasien Bulanan
                                 </CardTitle>
                                 <BarChart2 className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
@@ -147,14 +147,14 @@ export default function Dashboard({
                                     {stats.monthly_attendance}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
-                                    Check-ins this month
+                                    Tercatat bulan ini
                                 </p>
                             </CardContent>
                         </Card>
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">
-                                    Total Active Patients
+                                    Total Pasien Aktif
                                 </CardTitle>
                                 <Users className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
@@ -163,7 +163,7 @@ export default function Dashboard({
                                     {stats.total_patients}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
-                                    Registered in system
+                                    Terdaftar dalam sistem
                                 </p>
                             </CardContent>
                         </Card>
@@ -174,7 +174,7 @@ export default function Dashboard({
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">
-                                    Daily Therapists
+                                    Terapis Harian
                                 </CardTitle>
                                 <Activity className="h-4 w-4 text-orange-500" />
                             </CardHeader>
@@ -183,14 +183,14 @@ export default function Dashboard({
                                     {stats.daily_therapist_attendance}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
-                                    Checked in today
+                                    Tercatat hari ini
                                 </p>
                             </CardContent>
                         </Card>
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">
-                                    Weekly Therapists
+                                    Terapis Mingguan
                                 </CardTitle>
                                 <CalendarDays className="h-4 w-4 text-orange-500" />
                             </CardHeader>
@@ -199,14 +199,14 @@ export default function Dashboard({
                                     {stats.weekly_therapist_attendance}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
-                                    Check-ins this week
+                                    Tercatat minggu ini
                                 </p>
                             </CardContent>
                         </Card>
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">
-                                    Monthly Therapists
+                                    Terapis Bulanan
                                 </CardTitle>
                                 <BarChart2 className="h-4 w-4 text-orange-500" />
                             </CardHeader>
@@ -215,14 +215,14 @@ export default function Dashboard({
                                     {stats.monthly_therapist_attendance}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
-                                    Check-ins this month
+                                    Tercatat bulan ini
                                 </p>
                             </CardContent>
                         </Card>
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">
-                                    Total Active Therapists
+                                    Total Terapis Aktif
                                 </CardTitle>
                                 <Users className="h-4 w-4 text-orange-500" />
                             </CardHeader>
@@ -231,7 +231,7 @@ export default function Dashboard({
                                     {stats.total_therapists}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
-                                    Registered in system
+                                    Terdaftar dalam sistem
                                 </p>
                             </CardContent>
                         </Card>
@@ -242,10 +242,10 @@ export default function Dashboard({
                         <Card className="col-span-1">
                             <CardHeader>
                                 <CardTitle>
-                                    Daily Trends (Last 7 Days)
+                                    Tren Harian (7 Hari Terakhir)
                                 </CardTitle>
                                 <CardDescription>
-                                    Attendance volume over the past week.
+                                    Volume kehadiran selama seminggu terakhir.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="h-[300px]">
@@ -281,14 +281,14 @@ export default function Dashboard({
                                             fill="#3b82f6"
                                             radius={[4, 4, 0, 0]}
                                             barSize={20}
-                                            name="Patients"
+                                            name="Pasien"
                                         />
                                         <Bar
                                             dataKey="therapists"
                                             fill="#f97316"
                                             radius={[4, 4, 0, 0]}
                                             barSize={20}
-                                            name="Therapists"
+                                            name="Terapis"
                                         />
                                     </BarChart>
                                 </ResponsiveContainer>
@@ -298,10 +298,10 @@ export default function Dashboard({
                         <Card className="col-span-1">
                             <CardHeader>
                                 <CardTitle>
-                                    Monthly Trends (Last 6 Months)
+                                    Tren Bulanan (6 Bulan Terakhir)
                                 </CardTitle>
                                 <CardDescription>
-                                    Long-term attendance growth.
+                                    Pertumbuhan kehadiran jangka panjang.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="h-[300px]">
@@ -338,7 +338,7 @@ export default function Dashboard({
                                             strokeWidth={2}
                                             dot={{ r: 4, strokeWidth: 2 }}
                                             activeDot={{ r: 6 }}
-                                            name="Patients"
+                                            name="Pasien"
                                         />
                                         <Line
                                             type="monotone"
@@ -347,7 +347,7 @@ export default function Dashboard({
                                             strokeWidth={2}
                                             dot={{ r: 4, strokeWidth: 2 }}
                                             activeDot={{ r: 6 }}
-                                            name="Therapists"
+                                            name="Terapis"
                                         />
                                     </LineChart>
                                 </ResponsiveContainer>

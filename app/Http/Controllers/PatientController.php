@@ -93,7 +93,7 @@ class PatientController extends Controller
      */
     public function verify(Request $request): JsonResponse
     {
-        $search = $request->search;
+        $search = preg_replace('/[^0-9]/', '', (string) $request->search);
 
         if (empty($search)) {
             return response()->json(['patient' => null]);
@@ -102,6 +102,8 @@ class PatientController extends Controller
         $patient = Patient::where('phone', $search)
             ->with(['branches' => function ($q) {
                 $q->select('branches.id', 'branches.name');
+            }, 'attendances' => function ($q) {
+                $q->latest('check_in')->with('branch:id,name')->limit(1);
             }])
             ->first();
 

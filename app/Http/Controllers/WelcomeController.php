@@ -10,13 +10,18 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Models\Branch;
+use App\Models\Faq;
+use App\Models\FaqCategory;
 use Illuminate\Foundation\Application;
 
 class WelcomeController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Branch::with('schedules');
+        $query = Branch::with(['schedules', 'contacts', 'photos', 'activeAnnouncements', 'scheduleExceptions' => function ($q) {
+            $q->where('original_date', '>=', \Carbon\Carbon::today())
+              ->orWhere('rescheduled_date', '>=', \Carbon\Carbon::today());
+        }]);
 
         if ($request->filled('branch_id')) {
             $query->where('id', $request->branch_id);
@@ -50,8 +55,10 @@ class WelcomeController extends Controller
                 return $branch;
             }),
             'filters' => $request->only(['branch_id', 'day']),
-            'allBranches' => Branch::all(['id', 'name']),
+            'allBranches' => Branch::all(['id', 'name']), // allBranches is just used for select options
             'slideshowImages' => $slideshowImages,
+            'faqs' => Faq::with('categories')->get(),
+            'faqCategories' => FaqCategory::all(),
         ]);
     }
 }

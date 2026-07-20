@@ -15,12 +15,31 @@ export interface User {
     branch?: Branch;
 }
 
+export interface BranchContact {
+    id: number;
+    branch_id: number;
+    name: string;
+    phone?: string;
+}
+
+export interface BranchPhoto {
+    id: number;
+    branch_id: number;
+    photo_path: string;
+}
+
 export interface Branch {
     id: number;
     name: string;
     code?: string;
     address: string;
     map_url?: string;
+    embed_map_url?: string;
+    contacts?: BranchContact[];
+    photos?: BranchPhoto[];
+    schedule?: string;
+    schedule_exceptions?: any[];
+    active_announcements?: any[];
 }
 
 export type PageProps<

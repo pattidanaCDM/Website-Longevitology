@@ -32,7 +32,7 @@ interface Attendance {
     id: number;
     patient: Patient;
     complaint?: string;
-    check_in: string;
+    check_in: string | null;
     check_out: string | null;
     therapists: Therapist[];
     branch: Branch;
@@ -69,6 +69,7 @@ export default function PatientAttendanceIndex({
     const [editingAttendance, setEditingAttendance] =
         useState<Attendance | null>(null);
     const [editTherapistIds, setEditTherapistIds] = useState<number[]>([]);
+    const [confirmingCheckOutAll, setConfirmingCheckOutAll] = useState(false);
 
     const handleCheckIn = (e: React.FormEvent) => {
         e.preventDefault();
@@ -106,6 +107,27 @@ export default function PatientAttendanceIndex({
     const handleCheckOut = (id: number) => {
         router.put(route("attendance.patients.update", id), {
             check_out_now: true,
+        });
+    };
+
+    const handleCheckInNow = (id: number) => {
+        router.put(route("attendance.patients.update", id), {
+            check_in_now: true,
+        });
+    };
+
+    const confirmCheckOutAll = () => {
+        setConfirmingCheckOutAll(true);
+    };
+
+    const closeCheckOutAllModal = () => {
+        setConfirmingCheckOutAll(false);
+    };
+
+    const handleCheckOutAll = () => {
+        router.post(route("attendance.patients.checkout-all"), {}, {
+            preserveScroll: true,
+            onSuccess: () => closeCheckOutAllModal(),
         });
     };
 
@@ -158,23 +180,23 @@ export default function PatientAttendanceIndex({
         <AuthenticatedLayout
             header={
                 <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                    Patient Attendance
+                    Kehadiran Pasien
                 </h2>
             }
         >
-            <Head title="Patient Attendance" />
+            <Head title="Kehadiran Pasien" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
                     {/* Check-in Section */}
                     <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 p-6 rounded-lg shadow">
                         <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">
-                            Check In Patient {!isSuperadmin && auth.user.branch ? `- ${auth.user.branch.name}` : ''}
+                            Tambahkan Pasien ke Antrian {!isSuperadmin && auth.user.branch ? `- ${auth.user.branch.name}` : ''}
                         </h3>
                         <form onSubmit={handleCheckIn} className="space-y-4">
                             {isSuperadmin && branches && (
                                 <div>
-                                    <InputLabel htmlFor="branch_id">Branch</InputLabel>
+                                    <InputLabel htmlFor="branch_id">Cabang</InputLabel>
                                     <select
                                         id="branch_id"
                                         value={data.branch_id}
@@ -182,7 +204,7 @@ export default function PatientAttendanceIndex({
                                         className="mt-1 block w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
                                         required
                                     >
-                                        <option value="">Select Branch</option>
+                                        <option value="">Pilih Cabang</option>
                                         {branches.map((branch) => (
                                             <option key={branch.id} value={branch.id}>
                                                 {branch.name}
@@ -197,7 +219,7 @@ export default function PatientAttendanceIndex({
 
                             <div>
                                 <InputLabel htmlFor="patient_id">
-                                    Patient
+                                    Pasien
                                 </InputLabel>
                                 <SearchableSelect
                                     options={availablePatients.map(p => ({
@@ -207,7 +229,7 @@ export default function PatientAttendanceIndex({
                                     }))}
                                     value={data.patient_id}
                                     onChange={handlePatientChange}
-                                    placeholder={!isSuperadmin || data.branch_id ? "Select a patient..." : "Please select a branch first"}
+                                    placeholder={!isSuperadmin || data.branch_id ? "Pilih pasien..." : "Silakan pilih cabang terlebih dahulu"}
                                 />
                                 {errors.patient_id && (
                                     <span className="text-red-500 text-sm">
@@ -218,7 +240,7 @@ export default function PatientAttendanceIndex({
 
                             <div>
                                 <InputLabel htmlFor="complaint">
-                                    Current Complaint (Optional)
+                                    Keluhan Saat Ini (Opsional)
                                 </InputLabel>
                                 <textarea
                                     id="complaint"
@@ -228,7 +250,7 @@ export default function PatientAttendanceIndex({
                                     }
                                     className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     rows={2}
-                                    placeholder="Update complaint if changed..."
+                                    placeholder="Perbarui keluhan jika ada perubahan..."
                                 />
                                 {errors.complaint && (
                                     <span className="text-red-500 text-sm">
@@ -239,7 +261,7 @@ export default function PatientAttendanceIndex({
 
                             <div>
                                 <InputLabel className="mb-2 block">
-                                    Select Therapists (Optional)
+                                    Pilih Terapis (Opsional)
                                 </InputLabel>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                                     {therapists.map((therapist) => (
@@ -267,7 +289,7 @@ export default function PatientAttendanceIndex({
                             </div>
 
                             <Button type="submit" disabled={processing}>
-                                Check In
+                                Tambahkan ke Antrian
                             </Button>
                         </form>
                     </div>
@@ -276,11 +298,18 @@ export default function PatientAttendanceIndex({
                     <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 p-6 rounded-lg shadow">
                         <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
                             <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                                Attendance for{" "}
+                                Kehadiran untuk{" "}
                                 {format(new Date(), "PPP")}
                             </h3>
 
                             <div className="flex items-center space-x-2">
+                                <Button
+                                    variant="outline"
+                                    onClick={confirmCheckOutAll}
+                                    className="mr-2 text-yellow-600 border-yellow-600 hover:bg-yellow-50 dark:text-yellow-500 dark:border-yellow-600 dark:hover:bg-yellow-900/30"
+                                >
+                                    Check Out Semua
+                                </Button>
                                 <a
                                     href={route(
                                         "attendance.patients.export.excel",
@@ -288,7 +317,7 @@ export default function PatientAttendanceIndex({
                                     )}
                                     className="inline-flex items-center px-3 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-500 focus:bg-emerald-700 active:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition ease-in-out duration-150"
                                 >
-                                    Export Excel
+                                    Ekspor Excel
                                 </a>
                                 <a
                                     href={route(
@@ -298,7 +327,7 @@ export default function PatientAttendanceIndex({
                                     target="_blank"
                                     className="inline-flex items-center px-3 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150"
                                 >
-                                    Export PDF
+                                    Ekspor PDF
                                 </a>
                             </div>
                         </div>
@@ -308,25 +337,25 @@ export default function PatientAttendanceIndex({
                                 <thead className="bg-gray-50 dark:bg-slate-800/50">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Time
+                                            Waktu
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Patient
+                                            Pasien
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Complaint
+                                            Keluhan
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Therapists
+                                            Terapis
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Branch
+                                            Cabang
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             Status
                                         </th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Actions
+                                            Aksi
                                         </th>
                                     </tr>
                                 </thead>
@@ -337,7 +366,7 @@ export default function PatientAttendanceIndex({
                                                 colSpan={7}
                                                 className="px-6 py-4 text-center text-gray-500 dark:text-gray-400"
                                             >
-                                                No records found for this date.
+                                                Tidak ada catatan ditemukan untuk tanggal ini.
                                             </td>
                                         </tr>
                                     ) : (
@@ -345,17 +374,17 @@ export default function PatientAttendanceIndex({
                                             <tr key={record.id}>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                                                     <div>
-                                                        In:{" "}
-                                                        {format(
+                                                        Masuk:{" "}
+                                                        {record.check_in ? format(
                                                             new Date(
                                                                 record.check_in,
                                                             ),
                                                             "HH:mm",
-                                                        )}
+                                                        ) : "-"}
                                                     </div>
                                                     {record.check_out && (
                                                         <div className="text-gray-550 dark:text-gray-400">
-                                                            Out:{" "}
+                                                            Keluar:{" "}
                                                             {format(
                                                                 new Date(
                                                                     record.check_out,
@@ -394,16 +423,34 @@ export default function PatientAttendanceIndex({
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     {record.check_out ? (
                                                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-950/30 dark:text-green-400">
-                                                            Completed
+                                                            Selesai
+                                                        </span>
+                                                    ) : record.check_in ? (
+                                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-950/30 dark:text-yellow-400">
+                                                            Sudah Check In
                                                         </span>
                                                     ) : (
-                                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-950/30 dark:text-yellow-400">
-                                                            Checked In
+                                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950/30 dark:text-blue-400">
+                                                            Dalam Antrian
                                                         </span>
                                                     )}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                    {!record.check_out && (
+                                                    {!record.check_in && !record.check_out && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() =>
+                                                                handleCheckInNow(
+                                                                    record.id,
+                                                                )
+                                                            }
+                                                            className="mr-2 border-blue-500 text-blue-600 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/30"
+                                                        >
+                                                            Check In
+                                                        </Button>
+                                                    )}
+                                                    {record.check_in && !record.check_out && (
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
@@ -426,7 +473,7 @@ export default function PatientAttendanceIndex({
                                                             )
                                                         }
                                                         className="mr-2"
-                                                        title="Edit Therapists"
+                                                        title="Ubah Terapis"
                                                     >
                                                         <UserPlus className="w-4 h-4" />
                                                     </Button>
@@ -440,7 +487,7 @@ export default function PatientAttendanceIndex({
                                                             )
                                                         }
                                                         className="text-red-600 hover:text-red-900 ml-2"
-                                                        title="Delete Record"
+                                                        title="Hapus Catatan"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
@@ -462,16 +509,16 @@ export default function PatientAttendanceIndex({
             >
                 <div className="p-6 text-gray-900 dark:text-gray-100">
                     <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                        Edit Therapists for {editingAttendance?.patient.name}
+                        Ubah Terapis untuk {editingAttendance?.patient.name}
                     </h2>
 
                     <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                        Check-in Time:{" "}
-                        {editingAttendance &&
+                        Waktu Check-in:{" "}
+                        {editingAttendance && editingAttendance.check_in ?
                             format(
                                 new Date(editingAttendance.check_in),
                                 "PPP p",
-                            )}
+                            ) : "Dalam Antrian"}
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-96 overflow-y-auto p-1">
@@ -495,9 +542,31 @@ export default function PatientAttendanceIndex({
 
                     <div className="mt-6 flex justify-end space-x-3">
                         <SecondaryButton onClick={closeEditModal}>
-                            Cancel
+                            Batal
                         </SecondaryButton>
-                        <Button onClick={saveTherapists}>Save Changes</Button>
+                        <Button onClick={saveTherapists}>Simpan Perubahan</Button>
+                    </div>
+                </div>
+            </Modal>
+
+            <Modal show={confirmingCheckOutAll} onClose={closeCheckOutAllModal} maxWidth="md">
+                <div className="p-6">
+                    <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        Konfirmasi Check Out Semua
+                    </h2>
+                    <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                        Apakah Anda yakin ingin check out semua pasien yang masih aktif (dalam antrian maupun sudah check-in) pada hari ini? Tindakan ini akan mencatat waktu check-out saat ini untuk semua pasien tersebut.
+                    </p>
+                    <div className="mt-6 flex justify-end space-x-3">
+                        <SecondaryButton onClick={closeCheckOutAllModal}>
+                            Batal
+                        </SecondaryButton>
+                        <Button
+                            variant="destructive"
+                            onClick={handleCheckOutAll}
+                        >
+                            Ya, Check Out Semua
+                        </Button>
                     </div>
                 </div>
             </Modal>

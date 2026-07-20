@@ -16,6 +16,15 @@ class UpdatePatientRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('phone') && $this->phone !== null) {
+            $this->merge([
+                'phone' => preg_replace('/[^0-9]/', '', (string) $this->phone),
+            ]);
+        }
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *

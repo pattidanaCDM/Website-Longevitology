@@ -40,6 +40,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
     const [selectedTherapist, setSelectedTherapist] =
         useState<Therapist | null>(null);
     const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+    const [attendancePage, setAttendancePage] = useState(1);
 
     const [searchQuery, setSearchQuery] = useState(filters?.search || "");
 
@@ -108,11 +109,11 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                 setVerifiedTherapist(response.data.therapist);
             } else {
                 setVerifyError(
-                    "Therapist not found with that phone number or card number.",
+                    "Terapist tidak ditemukan dengan nomor telepon atau nomor kartu tersebut.",
                 );
             }
         } catch (error) {
-            setVerifyError("An error occurred while searching.");
+            setVerifyError("Terjadi kesalahan saat mencari.");
             console.error(error);
         } finally {
             setVerifyLoading(false);
@@ -188,6 +189,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                 route("therapists.show", therapist.id),
             );
             setSelectedTherapist(response.data);
+            setAttendancePage(1);
             setShowViewModal(true);
         } catch (error) {
             console.error("Failed to fetch therapist details", error);
@@ -219,18 +221,18 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
         <AuthenticatedLayout
             header={
                 <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                    Manage Therapists
+                    Kelola Terapis
                 </h2>
             }
         >
-            <Head title="Therapists" />
+            <Head title="Terapis" />
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
                         <div className="flex justify-between items-center mb-6">
                             <div className="flex items-center gap-4">
                                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                                    Therapist List
+                                    Daftar Terapis
                                 </h3>
                                 {isSuperadmin && (
                                     <select
@@ -250,7 +252,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                     <div className="relative">
                                         <input
                                             type="text"
-                                            placeholder="Search name/phone..."
+                                            placeholder="Cari nama/telepon..."
                                             value={searchQuery}
                                             onChange={(e) => {
                                                 setSearchQuery(e.target.value);
@@ -293,20 +295,21 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                 </form>
                             </div>
                             <div className="flex gap-2">
+
                                 {(!isSuperadmin || (new URLSearchParams(window.location.search).get('branch_id') && new URLSearchParams(window.location.search).get('branch_id') !== 'all')) && (
                                     <Button
                                         onClick={() => setShowVerifyModal(true)}
                                         variant="outline"
                                         className="flex items-center gap-2 dark:border-slate-800 dark:text-gray-200 dark:hover:bg-slate-800"
                                     >
-                                        <UserCheck className="w-4 h-4" /> Verify / Add Existing
+                                        <UserCheck className="w-4 h-4" /> Verifikasi / Tambah yang Sudah Ada
                                     </Button>
                                 )}
                                 <Button
                                     onClick={() => setShowAddModal(true)}
                                     className="flex items-center gap-2"
                                 >
-                                    <Plus className="w-4 h-4" /> Add New
+                                    <Plus className="w-4 h-4" /> Tambah Baru
                                 </Button>
                             </div>
                         </div>
@@ -316,19 +319,19 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                 <thead className="bg-gray-50 dark:bg-slate-800/50">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Name
+                                            Nama
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Gender
+                                            Jenis Kelamin
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Phone
+                                            Telepon
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Branch
+                                            Cabang
                                         </th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Actions
+                                            Aksi
                                         </th>
                                     </tr>
                                 </thead>
@@ -386,7 +389,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                                             openView(therapist)
                                                         }
                                                         className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                                                        title="View Details"
+                                                        title="Lihat Detail"
                                                     >
                                                         <Eye className="w-4 h-4" />
                                                     </button>
@@ -395,7 +398,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                                             openEdit(therapist)
                                                         }
                                                         className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                                        title="Edit"
+                                                        title="Ubah"
                                                     >
                                                         <Pencil className="w-4 h-4" />
                                                     </button>
@@ -406,7 +409,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                                             )
                                                         }
                                                         className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                                        title="Delete"
+                                                        title="Hapus"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
@@ -436,14 +439,14 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                         </div>
                         <h2 className="text-lg font-bold mb-4 dark:text-white">
                             {showEditModal
-                                ? "Edit Therapist"
-                                : "Add New Therapist"}
+                                ? "Ubah Terapis"
+                                : "Tambah Terapis Baru"}
                         </h2>
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Name <span className="text-red-500">*</span>
+                                    Nama <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -464,7 +467,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Gender <span className="text-red-500">*</span>
+                                        Jenis Kelamin <span className="text-red-500">*</span>
                                     </label>
                                     <select
                                         value={data.gender || ""}
@@ -474,9 +477,9 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                         }}
                                         className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                     >
-                                        <option value="">Select Gender</option>
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
+                                        <option value="">Pilih Jenis Kelamin</option>
+                                        <option value="male">Laki-laki</option>
+                                        <option value="female">Perempuan</option>
                                     </select>
                                     {errors.gender && (
                                         <p className="text-red-500 text-xs mt-1">
@@ -486,7 +489,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Birth Date <span className="text-red-500">*</span>
+                                        Tanggal Lahir <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="date"
@@ -507,7 +510,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Phone <span className="text-red-500">*</span>
+                                    Telepon <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -527,7 +530,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Address <span className="text-red-500">*</span>
+                                    Alamat <span className="text-red-500">*</span>
                                 </label>
                                 <textarea
                                     value={data.address}
@@ -546,7 +549,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Photo
+                                    Foto
                                 </label>
                                 <input
                                     type="file"
@@ -578,7 +581,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                         selectedTherapist?.photo)) && (
                                         <div className="mt-2">
                                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                                                Preview:
+                                                Pratinjau:
                                             </p>
                                             <div className="relative inline-block group">
                                                 <img
@@ -609,7 +612,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                                     }}
                                                 >
                                                     <span className="text-white text-xs font-bold">
-                                                        View
+                                                        Lihat
                                                     </span>
                                                 </button>
                                             </div>
@@ -621,7 +624,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                             {isSuperadmin && (
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Assign to Branch <span className="text-red-500">*</span>
+                                        Tugaskan ke Cabang <span className="text-red-500">*</span>
                                     </label>
                                     <div className="flex items-center gap-4">
                                         <label className="flex items-center gap-2 text-sm dark:text-gray-300">
@@ -633,7 +636,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                                     setData("branch_id", []);
                                                 }}
                                             />
-                                            Specific Branches
+                                            Cabang Tertentu
                                         </label>
                                         <label className="flex items-center gap-2 text-sm dark:text-gray-300">
                                             <input
@@ -644,7 +647,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                                     setData("branch_id", branches.map(b => b.id.toString()));
                                                 }}
                                             />
-                                            All Branches
+                                            Semua Cabang
                                         </label>
                                     </div>
                                     {!assignToAll && (
@@ -655,7 +658,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                                 onChange={(val) => {
                                                     setData("branch_id", val as string[]);
                                                 }}
-                                                placeholder="Search branches..."
+                                                placeholder="Cari cabang..."
                                             />
                                         </div>
                                     )}
@@ -677,10 +680,10 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                         reset();
                                     }}
                                 >
-                                    Cancel
+                                    Batal
                                 </Button>
                                 <Button type="submit" disabled={processing}>
-                                    {showEditModal ? "Update" : "Create"}
+                                    {showEditModal ? "Perbarui" : "Buat"}
                                 </Button>
                             </div>
                         </form>
@@ -689,10 +692,10 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
             )}
             {/* View Modal */}
             {showViewModal && selectedTherapist && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 relative">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+                    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-3xl p-6 relative max-h-[90vh] overflow-y-auto">
                         <div
-                            className="absolute top-4 right-4 cursor-pointer"
+                            className="absolute top-4 right-4 cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                             onClick={() => {
                                 setShowViewModal(false);
                                 setSelectedTherapist(null);
@@ -700,8 +703,8 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                         >
                             ✖
                         </div>
-                        <h2 className="text-lg font-bold mb-6 border-b pb-2">
-                            Therapist Details
+                        <h2 className="text-lg font-bold mb-6 border-b dark:border-slate-700 pb-2 text-gray-900 dark:text-white">
+                            Detail Terapis
                         </h2>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -710,7 +713,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                     <img
                                         src={`/storage/${selectedTherapist.photo}`}
                                         alt={selectedTherapist.name}
-                                        className="h-32 w-32 rounded-full object-cover border-4 border-gray-100 shadow-sm cursor-pointer hover:opacity-90"
+                                        className="h-32 w-32 rounded-full object-cover border-4 border-gray-100 dark:border-slate-700 shadow-sm cursor-pointer hover:opacity-90"
                                         onClick={() =>
                                             setSelectedPhoto(
                                                 `/storage/${selectedTherapist.photo}`,
@@ -718,14 +721,14 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                         }
                                     />
                                 ) : (
-                                    <div className="h-32 w-32 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                                    <div className="h-32 w-32 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-gray-400 dark:text-gray-500">
                                         <User className="h-16 w-16" />
                                     </div>
                                 )}
-                                <h3 className="mt-4 text-xl font-semibold text-gray-900 text-center">
+                                <h3 className="mt-4 text-xl font-semibold text-gray-900 dark:text-white text-center">
                                     {selectedTherapist.name}
                                 </h3>
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 capitalize mt-2">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400 capitalize mt-2">
                                     {selectedTherapist.gender}
                                 </span>
                             </div>
@@ -733,18 +736,18 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                             <div className="col-span-2 space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-xs font-medium text-gray-500 uppercase">
-                                            Phone
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                            Telepon
                                         </label>
-                                        <p className="mt-1 text-sm text-gray-900">
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-gray-200">
                                             {selectedTherapist.phone || "-"}
                                         </p>
                                     </div>
                                     <div>
-                                        <label className="text-xs font-medium text-gray-500 uppercase">
-                                            Birth Date
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                            Tanggal Lahir
                                         </label>
-                                        <p className="mt-1 text-sm text-gray-900">
+                                        <p className="mt-1 text-sm text-gray-900 dark:text-gray-200">
                                             {selectedTherapist.birth_date
                                                 ? new Date(
                                                     selectedTherapist.birth_date,
@@ -755,19 +758,19 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                 </div>
 
                                 <div>
-                                    <label className="text-xs font-medium text-gray-500 uppercase">
-                                        Address
+                                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                        Alamat
                                     </label>
-                                    <p className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
+                                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-200 whitespace-pre-wrap">
                                         {selectedTherapist.address || "-"}
                                     </p>
                                 </div>
 
-                                <div className="border-t pt-4 mt-4">
-                                    <h4 className="font-medium text-gray-900 mb-2">
-                                        Branch Information
+                                <div className="border-t dark:border-slate-700 pt-4 mt-4">
+                                    <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                                        Informasi Cabang
                                     </h4>
-                                    <div className="bg-gray-50 rounded-md p-4 max-h-40 overflow-y-auto">
+                                    <div className="bg-gray-50 dark:bg-slate-700/50 rounded-md p-4 max-h-40 overflow-y-auto">
                                         {selectedTherapist.branches &&
                                             selectedTherapist.branches.length >
                                             0 ? (
@@ -778,7 +781,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                                             key={branch.id}
                                                             className="flex justify-between items-center text-sm"
                                                         >
-                                                            <span className="font-medium text-gray-700">
+                                                            <span className="font-medium text-gray-700 dark:text-gray-200">
                                                                 {branch.name}
                                                             </span>
                                                         </li>
@@ -786,72 +789,103 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                                 )}
                                             </ul>
                                         ) : (
-                                            <p className="text-sm text-gray-500 italic">
-                                                No assigned branches.
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                                                Tidak ada cabang yang ditugaskan.
                                             </p>
                                         )}
                                     </div>
                                 </div>
 
-                                <div className="border-t pt-4 mt-4">
-                                    <h4 className="font-medium text-gray-900 mb-2">
-                                        Attendance History
+                                <div className="border-t dark:border-slate-700 pt-4 mt-4">
+                                    <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                                        Riwayat Kehadiran
                                     </h4>
-                                    <div className="bg-white rounded-md border border-gray-200 shadow-sm max-h-60 overflow-y-auto">
+                                    <div className="bg-white dark:bg-slate-800 rounded-md border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden">
                                         {(selectedTherapist as any)
                                             .attendances &&
                                             (selectedTherapist as any).attendances
                                                 .length > 0 ? (
-                                            <table className="min-w-full divide-y divide-gray-200">
-                                                <thead className="bg-gray-50 sticky top-0">
-                                                    <tr>
-                                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                                                            Date
-                                                        </th>
-                                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                                                            Branch
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="bg-white divide-y divide-gray-200">
-                                                    {(
-                                                        selectedTherapist as any
-                                                    ).attendances.map(
-                                                        (att: any) => (
-                                                            <tr key={att.id}>
-                                                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                                                                    {new Date(
-                                                                        att.check_in,
-                                                                    ).toLocaleDateString()}{" "}
-                                                                    <span className="text-gray-500 text-xs">
-                                                                        (
-                                                                        {new Date(
-                                                                            att.check_in,
-                                                                        ).toLocaleTimeString(
-                                                                            [],
-                                                                            {
-                                                                                hour: "2-digit",
-                                                                                minute: "2-digit",
-                                                                            },
-                                                                        )}
-                                                                        )
-                                                                    </span>
-                                                                </td>
-                                                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                                                                    {
-                                                                        att
-                                                                            .branch
-                                                                            ?.name
-                                                                    }
-                                                                </td>
+                                            <>
+                                                <div className="overflow-x-auto max-h-60 overflow-y-auto">
+                                                    <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                                                        <thead className="bg-gray-50 dark:bg-slate-700/50 sticky top-0">
+                                                            <tr>
+                                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                                                    Tanggal
+                                                                </th>
+                                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                                                    Cabang
+                                                                </th>
                                                             </tr>
-                                                        ),
-                                                    )}
-                                                </tbody>
-                                            </table>
+                                                        </thead>
+                                                        <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
+                                                            {(
+                                                                selectedTherapist as any
+                                                            ).attendances.slice((attendancePage - 1) * 5, attendancePage * 5).map(
+                                                                (att: any) => (
+                                                                    <tr key={att.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50">
+                                                                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                                                                            {new Date(
+                                                                                att.check_in,
+                                                                            ).toLocaleDateString()}{" "}
+                                                                            <span className="text-gray-500 dark:text-gray-400 text-xs">
+                                                                                (
+                                                                                {new Date(
+                                                                                    att.check_in,
+                                                                                ).toLocaleTimeString(
+                                                                                    [],
+                                                                                    {
+                                                                                        hour: "2-digit",
+                                                                                        minute: "2-digit",
+                                                                                    },
+                                                                                )}
+                                                                                )
+                                                                            </span>
+                                                                        </td>
+                                                                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                                            {
+                                                                                att
+                                                                                    .branch
+                                                                                    ?.name
+                                                                            }
+                                                                        </td>
+                                                                    </tr>
+                                                                ),
+                                                            )}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                {((selectedTherapist as any).attendances.length > 5) && (
+                                                    <div className="flex justify-between items-center p-3 border-t dark:border-slate-700 bg-gray-50 dark:bg-slate-800/80">
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                            Halaman {attendancePage} dari {Math.ceil((selectedTherapist as any).attendances.length / 5)}
+                                                        </span>
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => setAttendancePage(p => Math.max(1, p - 1))}
+                                                                disabled={attendancePage === 1}
+                                                                className="h-7 text-xs"
+                                                            >
+                                                                Sebelumnya
+                                                            </Button>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => setAttendancePage(p => Math.min(Math.ceil((selectedTherapist as any).attendances.length / 5), p + 1))}
+                                                                disabled={attendancePage === Math.ceil((selectedTherapist as any).attendances.length / 5)}
+                                                                className="h-7 text-xs"
+                                                            >
+                                                                Selanjutnya
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </>
                                         ) : (
-                                            <p className="p-4 text-sm text-gray-500 italic text-center">
-                                                No attendance records found.
+                                            <p className="p-4 text-sm text-gray-500 dark:text-gray-400 italic text-center">
+                                                Tidak ada catatan kehadiran yang ditemukan.
                                             </p>
                                         )}
                                     </div>
@@ -861,7 +895,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
 
                         <div className="mt-8 flex justify-end">
                             <Button onClick={() => setShowViewModal(false)} className="dark:bg-slate-700 dark:text-gray-200 dark:hover:bg-slate-600">
-                                Close
+                                Tutup
                             </Button>
                         </div>
                     </div>
@@ -883,13 +917,13 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                             ✖
                         </div>
                         <h2 className="text-lg font-bold mb-4">
-                            Verify / Add Existing Therapist
+                            Verifikasi / Tambah Terapis yang Sudah Ada
                         </h2>
 
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Search by Phone
+                                    Cari Berdasarkan Telepon
                                 </label>
                                 <div className="flex gap-2 mt-1">
                                     <input
@@ -898,7 +932,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                         onChange={(e) =>
                                             setVerifySearch(e.target.value)
                                         }
-                                        placeholder="Enter phone number..."
+                                        placeholder="Masukkan nomor telepon..."
                                         className="block w-full rounded-md border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                         onKeyDown={(e) =>
                                             e.key === "Enter" &&
@@ -912,7 +946,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                         }
                                     >
                                         {verifyLoading ? (
-                                            "Searching..."
+                                            "Mencari..."
                                         ) : (
                                             <Search className="w-4 h-4" />
                                         )}
@@ -946,18 +980,23 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                             {verifiedTherapist.phone}
                                         </p>
                                         <div className="text-xs text-gray-400 mt-1">
-                                            Found in{" "}
+                                            Ditemukan di{" "}
                                             {verifiedTherapist.branches
                                                 ?.length || 0}{" "}
-                                            branches
+                                            cabang
                                         </div>
+                                        {(verifiedTherapist as any).attendances && (verifiedTherapist as any).attendances.length > 0 && (
+                                            <div className="text-xs text-gray-500 mt-1">
+                                                Terakhir hadir: {new Date((verifiedTherapist as any).attendances[0].check_in).toLocaleDateString('id-ID')} di {(verifiedTherapist as any).attendances[0].branch?.name || "-"}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}
 
                             {isAlreadyInBranch && (
                                 <p className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 rounded-md">
-                                    This therapist is already registered in the selected branch.
+                                    Terapis ini sudah terdaftar di cabang yang dipilih.
                                 </p>
                             )}
 
@@ -972,10 +1011,10 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                         }}
                                         className="dark:bg-slate-700 dark:text-gray-200 dark:hover:bg-slate-600"
                                     >
-                                        Cancel
+                                        Batal
                                     </Button>
                                     <Button onClick={extendTherapist} disabled={isAlreadyInBranch} className="dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-700">
-                                        Add to My Branch
+                                        Tambahkan ke Cabang Saya
                                     </Button>
                                 </div>
                             )}
@@ -999,7 +1038,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                             className="absolute top-[-40px] right-0 text-white hover:text-gray-300 text-xl font-bold p-2"
                             onClick={() => setSelectedPhoto(null)}
                         >
-                            Close
+                            Tutup
                         </button>
                     </div>
                 </div>
@@ -1009,13 +1048,13 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
                     <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl w-full max-w-sm p-6 relative text-gray-900 dark:text-gray-100">
                         <h2 className="text-lg font-bold mb-4 text-red-600 dark:text-red-400">
-                            Delete Therapist
+                            Hapus Terapis
                         </h2>
 
                         {isSuperadmin ? (
                             <div className="space-y-4">
                                 <p>
-                                    How do you want to delete{" "}
+                                    Bagaimana Anda ingin menghapus{" "}
                                     <strong>{therapistToDelete.name}</strong>?
                                 </p>
 
@@ -1035,7 +1074,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                                 }))
                                             }
                                         />
-                                        Remove from a Branch
+                                        Hapus dari Cabang
                                     </label>
 
                                     {deleteDetails.type === "branch" && (
@@ -1050,7 +1089,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                             }
                                         >
                                             <option value="">
-                                                Select Branch
+                                                Pilih Cabang
                                             </option>
                                             {therapistToDelete.branches?.map(
                                                 (branch) => (
@@ -1081,15 +1120,15 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                                 }))
                                             }
                                         />
-                                        Delete Globally (All Branches)
+                                        Hapus Secara Global (Semua Cabang)
                                     </label>
                                 </div>
                             </div>
                         ) : (
                             <p>
-                                Are you sure you want to remove{" "}
-                                <strong>{therapistToDelete.name}</strong> from
-                                your branch? This action cannot be undone.
+                                Apakah Anda yakin ingin menghapus{" "}
+                                <strong>{therapistToDelete.name}</strong> dari
+                                cabang Anda? Tindakan ini tidak dapat dibatalkan.
                             </p>
                         )}
 
@@ -1099,7 +1138,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                 onClick={() => setShowDeleteModal(false)}
                                 className="dark:bg-slate-700 dark:text-gray-200 dark:hover:bg-slate-600"
                             >
-                                Cancel
+                                Batal
                             </Button>
                             <Button
                                 onClick={() => handleDelete()}
@@ -1110,7 +1149,7 @@ export default function TherapistIndex({ therapists, branches, filters }: Props)
                                     !deleteDetails.branch_id
                                 }
                             >
-                                Confirm Delete
+                                Konfirmasi Hapus
                             </Button>
                         </div>
                     </div>

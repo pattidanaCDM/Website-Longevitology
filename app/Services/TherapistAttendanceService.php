@@ -109,4 +109,24 @@ class TherapistAttendanceService
     {
         $attendance->delete();
     }
+
+    /**
+     * Check out all active attendances for the given date.
+     *
+     * @param User $user
+     * @param string $date
+     * @return void
+     */
+    public function checkoutAll(User $user, string $date): void
+    {
+        $query = TherapistAttendance::whereDate('check_in', $date)
+            ->whereNotNull('check_in')
+            ->whereNull('check_out');
+
+        if (!$user->isSuperadmin()) {
+            $query->where('branch_id', $user->branch_id);
+        }
+
+        $query->update(['check_out' => now()]);
+    }
 }

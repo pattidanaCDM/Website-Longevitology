@@ -16,7 +16,24 @@ class Branch extends Model
         'code',
         'address',
         'map_url',
+        'embed_map_url',
     ];
+
+    /**
+     * Get the contacts for the branch.
+     */
+    public function contacts(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(BranchContact::class);
+    }
+
+    /**
+     * Get the photos for the branch.
+     */
+    public function photos(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(BranchPhoto::class);
+    }
 
     /**
      * Get the schedules for the branch.
@@ -24,6 +41,40 @@ class Branch extends Model
     public function schedules(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Schedule::class);
+    }
+
+    /**
+     * Get the schedule exceptions for the branch.
+     */
+    public function scheduleExceptions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ScheduleException::class);
+    }
+
+    /**
+     * Get the announcements for the branch.
+     */
+    public function announcements(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Announcement::class);
+    }
+
+    /**
+     * Get the active announcements for the branch.
+     */
+    public function activeAnnouncements(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Announcement::class)
+            ->where('is_active', true)
+            ->where(function ($query) {
+                $query->where('type', 'permanent')
+                      ->orWhere(function ($q2) {
+                          $now = now()->toDateString();
+                          $q2->where('type', 'date_range')
+                             ->where('start_date', '<=', $now)
+                             ->where('end_date', '>=', $now);
+                      });
+            });
     }
 
     /**

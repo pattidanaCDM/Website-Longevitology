@@ -16,6 +16,7 @@ class UpdatePatientAttendanceRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'check_in_now' => 'nullable|boolean',
             'check_out_now' => 'nullable|boolean',
             'therapist_ids' => 'nullable|array',
             'therapist_ids.*' => 'exists:therapists,id',
