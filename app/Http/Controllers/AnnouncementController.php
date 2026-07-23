@@ -17,11 +17,7 @@ class AnnouncementController extends Controller
         $query = Announcement::with('branch');
 
         if (!$isSuperadmin) {
-            $query->whereHas('branch', function ($q) use ($user) {
-                $q->whereHas('users', function ($q2) use ($user) {
-                    $q2->where('users.id', $user->id);
-                });
-            });
+            $query->where('branch_id', $user->branch_id);
         }
 
         if ($request->has('branch_id') && $request->branch_id !== 'all') {
@@ -42,7 +38,7 @@ class AnnouncementController extends Controller
         if ($isSuperadmin) {
             $branches = Branch::all();
         } else {
-            $branches = $user->branches;
+            $branches = $user->branch ? [$user->branch] : [];
         }
 
         return Inertia::render('ManageAnnouncements/Index', [
@@ -71,8 +67,7 @@ class AnnouncementController extends Controller
         ]);
 
         if (!$isSuperadmin) {
-            $userBranchIds = $user->branches->pluck('id')->toArray();
-            if (!in_array($validated['branch_id'], $userBranchIds)) {
+            if ($validated['branch_id'] != $user->branch_id) {
                 return back()->with('error', 'Anda tidak memiliki akses ke cabang ini.');
             }
         }
@@ -100,9 +95,8 @@ class AnnouncementController extends Controller
         ]);
 
         if (!$isSuperadmin) {
-            $userBranchIds = $user->branches->pluck('id')->toArray();
             // Check both old and new branch
-            if (!in_array($announcement->branch_id, $userBranchIds) || !in_array($validated['branch_id'], $userBranchIds)) {
+            if ($announcement->branch_id != $user->branch_id || $validated['branch_id'] != $user->branch_id) {
                 return back()->with('error', 'Anda tidak memiliki akses ke cabang ini.');
             }
         }
@@ -118,8 +112,7 @@ class AnnouncementController extends Controller
         $isSuperadmin = $user->role->name === 'superadmin';
 
         if (!$isSuperadmin) {
-            $userBranchIds = $user->branches->pluck('id')->toArray();
-            if (!in_array($announcement->branch_id, $userBranchIds)) {
+            if ($announcement->branch_id != $user->branch_id) {
                 return back()->with('error', 'Anda tidak memiliki akses ke cabang ini.');
             }
         }

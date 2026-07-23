@@ -1,5 +1,6 @@
-import { Link, router } from "@inertiajs/react";
+import { Link, router, Head } from "@inertiajs/react";
 import GuestLayout from "@/Layouts/GuestLayout";
+import ImageSlideshow from "@/Components/ImageSlideshow";
 import { Button } from "@/Components/ui/button";
 import { MapPin, Calendar, Clock, Phone, ExternalLink, ChevronDown, Target, Lightbulb, History, AlertCircle, Megaphone } from "lucide-react";
 import { useState, useCallback } from "react";
@@ -10,7 +11,7 @@ import DarkModeToggle from "@/Components/DarkModeToggle";
 import Modal from "@/Components/Modal";
 import { Branch } from "@/types";
 
-export default function Welcome({ branches, filters, allBranches, slideshowImages = [], faqs = [], faqCategories = [] }: any) {
+export default function Welcome({ branches, filters, allBranches, slideshowImages = [], faqs = [], faqCategories = [], testimonials = [], therapyClasses = [] }: any) {
     const [values, setValues] = useState({
         branch_id: filters.branch_id || "",
         day: filters.day || "",
@@ -40,9 +41,10 @@ export default function Welcome({ branches, filters, allBranches, slideshowImage
     const days = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
 
     return (
-        <GuestLayout
+        <>
+            <Head title="Longevitology" />
+            <GuestLayout
             fullWidth={true}
-            slideshowImages={slideshowImages}
             header={
                 <header className="w-full bg-white/80 backdrop-blur-md border-b border-gray-200 dark:bg-slate-900/80 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300">
                     <div className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
@@ -52,17 +54,18 @@ export default function Welcome({ branches, filters, allBranches, slideshowImage
                                 Longevitology
                             </p>
                         </Link>
-                        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600 dark:text-gray-300">
-                            <a href="#home" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Home</a>
-                            <a href="#classes" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Kelas</a>
-                            <a href="#branches" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Cabang</a>
-                            <a href="#testimonials" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Testimoni</a>
-                            <a href="#faq" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">FAQ</a>
-                            <a href="#about" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Tentang</a>
-                            <a href="#contact" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Hubungi Kami</a>
-                        </nav>
-                        <div className="flex items-center gap-4">
-                            <DarkModeToggle />
+                        <div className="flex items-center gap-8">
+                            <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600 dark:text-gray-300">
+                                <a href="#home" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Home</a>
+                                <a href="#classes" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Kelas</a>
+                                <a href="#branches" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Cabang</a>
+                                <a href="#testimonials" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Testimoni</a>
+                                <a href="#faq" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">FAQ</a>
+                                <a href="#about" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Tentang</a>
+                            </nav>
+                            <div className="flex items-center gap-4">
+                                <DarkModeToggle />
+                            </div>
                         </div>
                     </div>
                 </header>
@@ -70,14 +73,29 @@ export default function Welcome({ branches, filters, allBranches, slideshowImage
         >
             <div className="flex flex-col min-h-screen">
                 {/* Hero Section */}
-                <section id="home" className="flex flex-col items-center justify-center text-center py-20 px-6 bg-slate-50 dark:bg-slate-900/50">
-                    <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight text-[#ad2c90]">
-                        Longevitology
-                    </h1>
+                <section id="home" className="relative flex flex-col items-center justify-center text-center min-h-[80vh] px-6 overflow-hidden">
+                    {/* Background Slideshow */}
+                    <div className="absolute inset-0 z-0">
+                        <ImageSlideshow 
+                            images={slideshowImages.length > 0 ? slideshowImages : ['/image/slideshow1.png']}
+                            className="w-full h-full object-cover"
+                        />
+                        {/* Overlay: Dark gradient to ensure text remains readable over the images */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70 z-10" />
+                    </div>
 
-                    <p className="text-muted-foreground text-lg max-w-2xl mb-8">
-                        Platform kesehatan & longevity berbasis sains. Temukan pusat latihan terdekat dan mulai perjalanan kesehatan Anda.
-                    </p>
+                    {/* Hero Content */}
+                    <div className="relative z-20 max-w-4xl mx-auto flex flex-col items-center">
+                        <h1 className="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight text-white drop-shadow-md">
+                            Longevitology
+                        </h1>
+                        <p className="text-gray-200 text-lg md:text-xl max-w-2xl mb-10 drop-shadow">
+                            Platform kesehatan & longevity berbasis sains. Temukan pusat latihan terdekat dan mulai perjalanan kesehatan Anda.
+                        </p>
+                        <a href="#classes" className="px-8 py-4 bg-[#ad2c90] hover:bg-[#8b1e70] text-white rounded-full font-medium transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                            Mulai Perjalanan Anda
+                        </a>
+                    </div>
                 </section>
 
                 {/* Classes Section */}
@@ -87,41 +105,29 @@ export default function Welcome({ branches, filters, allBranches, slideshowImage
                         <p className="text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">
                             Tingkatkan energi dan keseimbangan tubuh Anda melalui kelas Longevitology yang dipandu oleh praktisi berpengalaman.
                         </p>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-8 border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all">
-                                <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">Kelas Dasar</h3>
-                                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                                    Pada kelas Pemula, cakra peserta akan dibuka sebesar 30%. 
-                                    Materi mengenai teori, teknik, dan etika Longevitology akan diajarkan, termasuk teknik meditasi kesadaran penuh (*mindfulness*). 
-                                </p>
-                                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">    
-                                    Setelah mengikuti kelas ini, peserta dapat melakukan penyesuaian diri.
-                                    Setiap sesi kelas pemula berlangsung selama 10–12 jam dan diadakan pada malam hari serta akhir pekan dalam kurun waktu tiga hari. Meskipun tidak dipungut biaya untuk mengikuti kelas ini, pendaftaran awal tetap diperlukan dengan sistem siapa cepat dia dapat
-                                </p>
-                            </div>
-                            <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-8 border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all transform md:-translate-y-4">
-                                <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">Kelas Menengah</h3>
-                                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                                    Dalam kelas tingkat menengah (Intermediate), cakra peserta akan dibuka kembali dan tingkat energi mereka akan meningkat sebesar 30%. 
-                                    Peserta akan mempelajari cara menggunakan berbagai posisi tangan untuk melakukan penyesuaian khusus guna mengatasi beragam penyakit dan masalah kesehatan.
-                                    Setelah mengikuti kelas ini, peserta dapat mulai melakukan penyesuaian terhadap orang lain.
-                                </p>
-                                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">    
-                                    Setiap sesi tingkat menengah berlangsung selama 10–12 jam dan diadakan pada malam hari serta akhir pekan dalam kurun waktu tiga hari. 
-                                    Meskipun kelas ini tidak dipungut biaya, pendaftaran awal wajib dilakukan dengan sistem siapa cepat dia dapat.
-                                </p>
-                            </div>
-                            <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-8 border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all">
-                                <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">Kelas Lanjutan</h3>
-                                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                                    Dalam kelas tingkat lanjut, cakra para peserta akan terbuka sepenuhnya dan tingkat energi mereka akan meningkat. 
-                                    Peserta akan mempelajari teknik penyembuhan tingkat lanjut, seperti cara melakukan penyembuhan jarak jauh melalui telepon serta penyesuaian energi untuk penyakit serius.
-                                </p>
-                                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">    
-                                    Kelas ini berdurasi 15–18 jam dan diselenggarakan pada malam hari serta akhir pekan dalam kurun waktu lima hari. 
-                                    Calon peserta kelas tingkat lanjut harus telah menyelesaikan kelas tingkat menengah lebih dari dua bulan sebelumnya, memenuhi jumlah jam penyesuaian tertentu, serta menulis esai mengenai kesan dan pengalaman mereka selama mengikuti Longevitology.
-                                </p>
-                            </div>
+                        <div className="flex overflow-x-auto pb-8 pt-4 -mx-6 px-6 md:-mx-4 md:px-4 snap-x snap-mandatory gap-6 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:dark:bg-slate-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
+                            {therapyClasses.length === 0 ? (
+                                <div className="w-full text-center text-gray-500">Belum ada kelas terapi yang tersedia.</div>
+                            ) : (
+                                therapyClasses.map((therapyClass: any, index: number) => (
+                                    <div key={therapyClass.id} className="min-w-[85vw] sm:min-w-[320px] max-w-[350px] shrink-0 snap-center bg-slate-50 dark:bg-slate-900 rounded-2xl p-8 border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all flex flex-col h-full">
+                                        <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">{therapyClass.title}</h3>
+                                        <div className="text-gray-600 dark:text-gray-400 text-sm mb-4 whitespace-pre-wrap flex-grow">
+                                            {therapyClass.content}
+                                        </div>
+                                        {therapyClass.registration_url && (
+                                            <a 
+                                                href={therapyClass.registration_url} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="mt-6 w-full inline-flex items-center justify-center px-4 py-3 bg-[#ad2c90] hover:bg-[#8a2373] text-white text-sm font-semibold rounded-lg shadow transition-colors"
+                                            >
+                                                Daftar Sekarang <ExternalLink className="ml-2 w-4 h-4" />
+                                            </a>
+                                        )}
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </section>
@@ -225,15 +231,14 @@ export default function Welcome({ branches, filters, allBranches, slideshowImage
                                                 )}
                                                 <Button
                                                     onClick={() => openDetailModal(branch)}
-                                                    className={`w-full rounded-full text-white font-semibold py-6 text-base shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ${
-                                                        (branch.schedule_exceptions && branch.schedule_exceptions.length > 0) && (branch.active_announcements && branch.active_announcements.length > 0)
+                                                    className={`w-full rounded-full text-white font-semibold py-6 text-base shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ${(branch.schedule_exceptions && branch.schedule_exceptions.length > 0) && (branch.active_announcements && branch.active_announcements.length > 0)
                                                             ? 'bg-gradient-to-r from-red-600 to-blue-600 hover:from-red-700 hover:to-blue-700'
                                                             : (branch.schedule_exceptions && branch.schedule_exceptions.length > 0)
                                                                 ? 'bg-red-600 hover:bg-red-700'
                                                                 : (branch.active_announcements && branch.active_announcements.length > 0)
                                                                     ? 'bg-blue-600 hover:bg-blue-700'
                                                                     : 'bg-[#ad2c90] hover:bg-[#8a2373]'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     Lihat Detail
                                                 </Button>
@@ -254,76 +259,27 @@ export default function Welcome({ branches, filters, allBranches, slideshowImage
                     <div className="max-w-6xl mx-auto text-center">
                         <h2 className="text-3xl font-bold mb-12 text-[#ad2c90]">Testimoni</h2>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 item-stretch">
-                            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 text-left flex flex-col h-full">
-                                <p className="text-gray-600 dark:text-gray-300 italic mb-6">"...I passed a stone of 0.9cm in diameter with sharp edges..."</p>
-                                <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-4">- Dr. Chen, MD - Taiwan</h4>
-                                <Link
-                                    href='/testimonials#kidney-stones'
-                                    className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition mt-4 text-sm w-fit mt-auto"
-                                >
-                                    Baca Selengkapnya
-                                </Link>
-                            </div>
-                            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 text-left flex flex-col h-full">
-                                <p className="text-gray-600 dark:text-gray-300 italic mb-6">"...CT scan verified that all my liver cysts had disappeared..."</p>
-                                <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-4">Szusin Chen - USA</h4>
-                                <Link
-                                    href='/testimonials#liver-cysts'
-                                    className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition mt-4 text-sm w-fit mt-auto"
-                                >
-                                    Baca Selengkapnya
-                                </Link>
-                            </div>
-                            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 text-left flex flex-col h-full">
-                                <p className="text-gray-600 dark:text-gray-300 italic mb-6 text-sm flex-grow">"...Longevitology is like a doctor with you at all times..."</p>
-                                <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-4">Mr. Ku - Germany</h4>
-                                <Link
-                                    href='/testimonials#own-physician'
-                                    className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition mt-4 text-sm w-fit mt-auto"
-                                >
-                                    Baca Selengkapnya
-                                </Link>
-                            </div>
-                            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 text-left flex flex-col h-full">
-                                <p className="text-gray-600 dark:text-gray-300 italic mb-6 text-sm flex-grow">"...my headache was taken care of without medication..."</p>
-                                <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-4">Ms. Gu, retired prof - Taiwan</h4>
-                                <Link
-                                    href='/testimonials#headache'
-                                    className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition mt-4 text-sm w-fit mt-auto"
-                                >
-                                    Baca Selengkapnya
-                                </Link>
-                            </div>
-                            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 text-left flex flex-col h-full">
-                                <p className="text-gray-600 dark:text-gray-300 italic mb-6 text-sm flex-grow">"...He did not even sneeze once when pollen swept through England in May..."</p>
-                                <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-4">Mrs. Chen - England</h4>
-                                <Link
-                                    href='/testimonials#allergies'
-                                    className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition mt-4 text-sm w-fit mt-auto"
-                                >
-                                    Baca Selengkapnya
-                                </Link>
-                            </div>
-                            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 text-left flex flex-col h-full">
-                                <p className="text-gray-600 dark:text-gray-300 italic mb-6 text-sm flex-grow">"...introduced to Longetivology in 2001...many people have benefited from adjustments..."</p>
-                                <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-4">Russ Gothrick - USA</h4>
-                                <Link
-                                    href='/testimonials#empower'
-                                    className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition mt-4 text-sm w-fit mt-auto"
-                                >
-                                    Baca Selengkapnya
-                                </Link>
-                            </div>
-                            <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 text-left flex flex-col h-full">
-                                <p className="text-gray-600 dark:text-gray-300 italic mb-6 text-sm flex-grow">"...I got a stroke. My colleague adjusted me...When I got up the next morning, I could move freely..."</p>
-                                <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-4">Tien Fa Tzai - China</h4>
-                                <Link
-                                    href='/testimonials#stroke'
-                                    className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition mt-4 text-sm w-fit mt-auto"
-                                >
-                                    Baca Selengkapnya
-                                </Link>
-                            </div>
+                            {testimonials.length === 0 ? (
+                                <div className="col-span-full text-center text-gray-500">Belum ada testimoni.</div>
+                            ) : (
+                                testimonials.map((testimonial: any) => (
+                                    <div key={testimonial.id} className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 text-left flex flex-col h-full">
+                                        <p className="text-gray-600 dark:text-gray-300 italic mb-6 text-sm flex-grow">
+                                            "{testimonial.excerpt ? testimonial.excerpt : (testimonial.content.length > 100 ? testimonial.content.substring(0, 100) + '...' : testimonial.content)}"
+                                        </p>
+                                        <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-1">{testimonial.name}</h4>
+                                        {testimonial.location && (
+                                            <span className="text-xs text-gray-500 dark:text-gray-400 mb-4">{testimonial.location}</span>
+                                        )}
+                                        <Link
+                                            href={`/testimonials#testimonial-${testimonial.id}`}
+                                            className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition mt-4 text-sm w-fit mt-auto"
+                                        >
+                                            Baca Selengkapnya
+                                        </Link>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </section>
@@ -435,60 +391,6 @@ export default function Welcome({ branches, filters, allBranches, slideshowImage
                     </div>
                 </section>
 
-                {/* Contact Section */}
-                <section id="contact" className="py-20 px-6 bg-slate-50 dark:bg-slate-900/50 transition-colors duration-300">
-                    <div className="max-w-3xl mx-auto">
-                        <h2 className="text-3xl font-bold mb-4 text-center text-[#ad2c90]">Hubungi Kami</h2>
-                        <p className="text-center text-gray-600 dark:text-gray-400 mb-10">Punya pertanyaan? Kirimkan pesan melalui form di bawah ini.</p>
-
-                        <form action="https://api.web3forms.com/submit" method="POST" className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] shadow-sm border border-gray-100 dark:border-slate-800 space-y-6">
-                            {/* Replace with actual Access Key from Web3Forms */}
-                            <input type="hidden" name="access_key" value="YOUR_ACCESS_KEY_HERE" />
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nama Lengkap</label>
-                                    <input type="text" name="name" required className="w-full rounded-xl border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-[#ad2c90] focus:border-[#ad2c90]" placeholder="Nama Anda" />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
-                                    <input type="email" name="email" required className="w-full rounded-xl border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-[#ad2c90] focus:border-[#ad2c90]" placeholder="nama@email.com" />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Provinsi</label>
-                                <select name="province" required className="w-full rounded-xl border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-[#ad2c90] focus:border-[#ad2c90]">
-                                    <option value="">Pilih Provinsi</option>
-                                    <option value="DKI Jakarta">DKI Jakarta</option>
-                                    <option value="Jawa Barat">Jawa Barat</option>
-                                    <option value="Jawa Tengah">Jawa Tengah</option>
-                                    <option value="Jawa Timur">Jawa Timur</option>
-                                    <option value="Banten">Banten</option>
-                                    <option value="Lainnya">Lainnya</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Judul</label>
-                                <input type="text" name="subject" required className="w-full rounded-xl border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-[#ad2c90] focus:border-[#ad2c90]" placeholder="Judul Pesan" />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pesan (Komentar)</label>
-                                <textarea name="message" rows={4} required className="w-full rounded-xl border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-[#ad2c90] focus:border-[#ad2c90]" placeholder="Tuliskan pesan Anda di sini..."></textarea>
-                            </div>
-
-                            <input type="hidden" name="redirect" value="https://web3forms.com/success" />
-
-                            <div className="pt-2">
-                                <Button type="submit" className="w-full rounded-xl bg-[#ad2c90] hover:bg-[#8a2373] text-white font-semibold py-4 text-base shadow-md hover:-translate-y-0.5 transition-all">
-                                    Kirim Pesan
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
-                </section>
             </div>
 
             {/* Detail Branch Modal */}
@@ -734,5 +636,6 @@ export default function Welcome({ branches, filters, allBranches, slideshowImage
                 )}
             </Modal>
         </GuestLayout>
+        </>
     );
 }

@@ -271,7 +271,7 @@ export default function AttendanceArchiveIndex({
                                             className="mt-1 block w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
                                         >
                                             <option value="">Pilih Tanggal</option>
-                                            {availableDates.map((d) => (
+                                            {availableDates.filter(d => d).map((d) => (
                                                 <option key={d} value={d}>
                                                     {format(new Date(d), "PPP")}
                                                 </option>

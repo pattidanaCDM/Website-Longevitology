@@ -15,7 +15,9 @@ Route::get('/about', function () {
 })->name('about');
 
 Route::get('/testimonials', function () {
-    return Inertia::render('TestimonialDetail');
+    return Inertia::render('TestimonialDetail', [
+        'testimonials' => \App\Models\Testimonial::where('is_active', true)->get()
+    ]);
 })->name('testimonials');
 
 // Update Dashboard Route
@@ -52,6 +54,18 @@ Route::middleware(['auth', \App\Http\Middleware\CheckRole::class . ':superadmin'
     Route::post('/faqs', [\App\Http\Controllers\FaqController::class, 'storeFaq'])->name('faqs.store');
     Route::put('/faqs/{faq}', [\App\Http\Controllers\FaqController::class, 'updateFaq'])->name('faqs.update');
     Route::delete('/faqs/{faq}', [\App\Http\Controllers\FaqController::class, 'destroyFaq'])->name('faqs.destroy');
+
+    // Therapy Classes Management Routes
+    Route::get('/therapy-classes', [\App\Http\Controllers\TherapyClassController::class, 'index'])->name('therapy-classes.index');
+    Route::post('/therapy-classes', [\App\Http\Controllers\TherapyClassController::class, 'store'])->name('therapy-classes.store');
+    Route::put('/therapy-classes/{therapyClass}', [\App\Http\Controllers\TherapyClassController::class, 'update'])->name('therapy-classes.update');
+    Route::delete('/therapy-classes/{therapyClass}', [\App\Http\Controllers\TherapyClassController::class, 'destroy'])->name('therapy-classes.destroy');
+
+    // Testimonial Management Routes
+    Route::get('/testimonials-manage', [\App\Http\Controllers\TestimonialController::class, 'index'])->name('testimonials.manage.index');
+    Route::post('/testimonials', [\App\Http\Controllers\TestimonialController::class, 'store'])->name('testimonials.store');
+    Route::put('/testimonials/{testimonial}', [\App\Http\Controllers\TestimonialController::class, 'update'])->name('testimonials.update');
+    Route::delete('/testimonials/{testimonial}', [\App\Http\Controllers\TestimonialController::class, 'destroy'])->name('testimonials.destroy');
 
     // Audit Logs
     Route::get('/audit-logs', [\App\Http\Controllers\AuditTrailController::class, 'index'])->name('audit-logs.index');

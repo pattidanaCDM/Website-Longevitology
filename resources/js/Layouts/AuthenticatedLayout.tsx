@@ -229,7 +229,7 @@ export default function Authenticated({
             <aside
                 className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 z-40 ${
                     sidebarOpen ? "w-64" : "w-0"
-                } overflow-hidden`}
+                } overflow-y-auto overflow-x-hidden no-scrollbar`}
             >
                 <div className="p-4 space-y-2">
                     {/* Dashboard */}
@@ -409,6 +409,56 @@ export default function Authenticated({
                     {isSuperadmin && (
                         <>
                             <div className="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider ml-4">
+                                Konten Website
+                            </div>
+
+                            <Link
+                                href={route("faqs.index")}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                                    route().current("faqs.*")
+                                        ? "bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white"
+                                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
+                                }`}
+                            >
+                                <HelpCircle className="w-5 h-5" />
+                                <span className="font-medium">
+                                    Kelola FAQ
+                                </span>
+                            </Link>
+
+                            <Link
+                                href={route("therapy-classes.index")}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                                    route().current("therapy-classes.*")
+                                        ? "bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white"
+                                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
+                                }`}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+                                </svg>
+                                <span className="font-medium">
+                                    Kelola Kelas Terapi
+                                </span>
+                            </Link>
+
+                            <Link
+                                href={route("testimonials.manage.index")}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                                    route().current("testimonials.manage.*")
+                                        ? "bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white"
+                                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
+                                }`}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                <span className="font-medium">
+                                    Kelola Testimoni
+                                </span>
+                            </Link>
+
+                            <div className="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider ml-4">
                                 Administration
                             </div>
 
@@ -437,20 +487,6 @@ export default function Authenticated({
                                 <Map className="w-5 h-5" />
                                 <span className="font-medium">
                                     Kelola Cabang
-                                </span>
-                            </Link>
-
-                            <Link
-                                href={route("faqs.index")}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                                    route().current("faqs.*")
-                                        ? "bg-gradient-to-r from-[#ad2c90] to-[#5400d4] text-white"
-                                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"
-                                }`}
-                            >
-                                <HelpCircle className="w-5 h-5" />
-                                <span className="font-medium">
-                                    Kelola FAQ
                                 </span>
                             </Link>
 

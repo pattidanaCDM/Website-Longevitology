@@ -32,10 +32,12 @@ class AttendanceArchiveController extends Controller
         if ($branchId) {
             // Get unique dates from patient attendances
             $patientDates = PatientAttendance::where('branch_id', $branchId)
+                ->whereNotNull('check_in')
                 ->select(DB::raw('DATE(check_in) as date'));
             
             // Get unique dates from therapist attendances
             $therapistDates = TherapistAttendance::where('branch_id', $branchId)
+                ->whereNotNull('check_in')
                 ->select(DB::raw('DATE(check_in) as date'));
                 
             $availableDates = $patientDates->union($therapistDates)

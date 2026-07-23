@@ -17,17 +17,18 @@ export default function AboutDetail() {
                             Longevitology
                         </p>
                     </Link>
-                    <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600 dark:text-gray-300">
-                        <Link href="/#home" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Home</Link>
-                        <Link href="/#classes" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Kelas</Link>
-                        <Link href="/#branches" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Cabang</Link>
-                        <Link href="/#testimonials" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Testimoni</Link>
-                        <Link href="/#faq" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">FAQ</Link>
-                        <Link href="/#about" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Tentang</Link>
-                        <Link href="/#contact" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Hubungi Kami</Link>
-                    </nav>
-                    <div className="flex items-center gap-4">
-                        <DarkModeToggle />
+                    <div className="flex items-center gap-8">
+                        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600 dark:text-gray-300">
+                            <Link href="/#home" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Home</Link>
+                            <Link href="/#classes" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Kelas</Link>
+                            <Link href="/#branches" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Cabang</Link>
+                            <Link href="/#testimonials" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Testimoni</Link>
+                            <Link href="/#faq" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">FAQ</Link>
+                            <Link href="/#about" className="hover:text-[#ad2c90] dark:hover:text-[#d35fb9] transition-colors">Tentang</Link>
+                        </nav>
+                        <div className="flex items-center gap-4">
+                            <DarkModeToggle />
+                        </div>
                     </div>
                 </div>
             </header>

@@ -3,9 +3,10 @@ import { useState, useEffect } from 'react';
 interface Props {
     images: string[];
     className?: string;
+    showDots?: boolean;
 }
 
-export default function ImageSlideshow({ images, className = "" }: Props) {
+export default function ImageSlideshow({ images, className = "", showDots = false }: Props) {
     const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {
@@ -27,9 +28,9 @@ export default function ImageSlideshow({ images, className = "" }: Props) {
                 alt={`Slide ${currentIndex + 1}`}
                 className="w-full h-full object-cover transition-opacity duration-500"
             />
-            {/* Dots navigation if more than 1 image */}
-            {images.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+            {/* Dots navigation if more than 1 image and showDots is true */}
+            {showDots && images.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
                     {images.map((_, idx) => (
                         <button
                             key={idx}

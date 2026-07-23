@@ -59,6 +59,8 @@ class WelcomeController extends Controller
             'slideshowImages' => $slideshowImages,
             'faqs' => Faq::with('categories')->get(),
             'faqCategories' => FaqCategory::all(),
+            'testimonials' => \App\Models\Testimonial::where('is_active', true)->get(),
+            'therapyClasses' => \App\Models\TherapyClass::where('is_active', true)->orderBy('order_column')->get(),
         ]);
     }
 }
